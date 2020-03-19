@@ -26,10 +26,7 @@ They are able to do these actions:
   - arguments
     - `betId` - the bet to start
 
-- `resolveBet` after the betters have chosen their options and if they don't agree on the result of the bet, this can be called to force a result and the funds will be disbursed to the winner
-  - arguments
-    - `betId` - the bet to forcefully resolve
-    - `option` - the result of the bet
+
 
 - `closeBet` after the betters have chosen their options, and they agree on the result, the bet can be closed and the funds will be disbursed to the winner
   - arguments
@@ -57,10 +54,10 @@ In case the betters do not post the results or they post incorrect results, a **
 
 They are able to do these actions:
 
-- `resolveBet` forces the result of the bet and disburses the funds to the winner
+- `resolveBet` after the betters have chosen their options and if they don't agree on the result of the bet, this can be called to force a result and the funds will be disbursed to the winner
   - arguments
-    - `betId` - the id to identify the bet
-    - `option` - the real result of the bet
+    - `betId` - the bet to forcefully resolve
+    - `option` - the result of the bet
 
 - `cancelBet` cancels the bet and sends the funds back to the original **Betters**
   - arguments

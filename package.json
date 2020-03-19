@@ -31,6 +31,12 @@
     "url": "https://github.com/cleanunicorn/trustbet/issues"
   },
   "homepage": "https://github.com/cleanunicorn/trustbet#readme",
+  "files": [
+    "/contracts/**/*.sol",
+    "/build/contracts/*.json",
+    "!/contracts/mocks",
+    "!/contracts/examples"
+  ],
   "devDependencies": {
     "@openzeppelin/cli": "^2.7.2",
     "@openzeppelin/test-environment": "^0.1.3",

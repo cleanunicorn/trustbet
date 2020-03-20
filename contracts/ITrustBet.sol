@@ -18,7 +18,11 @@ interface ITrustBet {
         address trustee
     ) external returns (uint betId);
 
-    // function startBet(uint betId) external;
+    event BetStarted(
+        uint betId
+    );
+
+    function startBet(uint betId) external;
 
     // function closeBet(uint betId) external;
 
@@ -30,6 +34,8 @@ interface ITrustBet {
     //     string calldata option
     // )
     // external;
+
+    // collectWinningBet
 
     // // Trustee actions
     // function resolveBet(

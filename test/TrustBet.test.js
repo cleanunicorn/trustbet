@@ -1,35 +1,36 @@
 const {
     accounts,
-    contract
+    contract,
 } = require('@openzeppelin/test-environment')
 
 const {
-    expect
+    expect,
 } = require('chai')
 
 const {
     BN,
     expectEvent,
-} = require("@openzeppelin/test-helpers")
+} = require('@openzeppelin/test-helpers')
 
 const TrustBet = contract.fromArtifact('TrustBet')
 
 // Bet definition
-const betDescription = "What is the answer to life the universe and everything?"
+const betName = 'The answer to life'
+const betDescription = 'What is the answer to life the universe and everything?'
 const betOptions = [
-    "42",
-    "No answer",
-    "0"
+    '42',
+    'No answer',
+    '0',
 ]
 
 // Actors
 const [
-    trustee
+    trustee,
 ] = accounts
 
 // Array equality
-let array_equal = (a, b) => {
-    return !!a && !!b && !(a < b || b < a);
+const arrayEqual = (a, b) => {
+    return !!a && !!b && !(a < b || b < a)
 }
 
 describe('TrustBet', async () => {
@@ -50,16 +51,17 @@ describe('TrustBet', async () => {
     context('bet', async () => {
         it('creates new bet', async () => {
             const createBetTx = await this.TrustBet.createBet(
+                betName,
                 betDescription,
                 betOptions,
-                trustee
+                trustee,
             )
-
 
             expectEvent(
                 createBetTx,
                 'CreatedBet', {
                     betId: new BN('0'),
+                    name: betName,
                     description: betDescription,
                     // Array equality is broken in JavaScript, the check is done below
                     // options: betOptions,
@@ -67,8 +69,10 @@ describe('TrustBet', async () => {
                 },
             )
 
-            expect(array_equal(betOptions, createBetTx.logs[0].args.options), "bet options should match").to.be.true
-
+            expect(
+                arrayEqual(betOptions, createBetTx.logs[0].args.options),
+                'bet options should match',
+            ).to.be.equal(true)
         })
     })
 })

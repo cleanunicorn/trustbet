@@ -3,15 +3,21 @@ pragma experimental ABIEncoderV2;
 
 interface ITrustBet {
     // Manager actions
-    event CreatedBet(uint betId, string description, string[] options, address trustee);
+    event CreatedBet(
+        uint betId,
+        string name,
+        string description,
+        string[] options,
+        address trustee
+    );
 
     function createBet(
+        string calldata name,
         string calldata description,
         string[] calldata options,
         address trustee
     ) external returns (uint betId);
 
-    // startBet
     // function startBet(uint betId) external;
 
     // function closeBet(uint betId) external;

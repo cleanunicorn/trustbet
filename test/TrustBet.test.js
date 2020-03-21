@@ -23,11 +23,13 @@ const betOptions = [
     'No answer',
     '0',
 ]
+const betValue = new BN('10')
 
 // Actors
 const [
     manager,
     trustee,
+    bettorA,
     otherAccount,
 ] = accounts
 
@@ -37,16 +39,12 @@ const arrayEqual = (a, b) => {
 }
 
 describe('TrustBet', async () => {
-    it('passes the test', async () => {
-        expect(true)
-    })
-
     beforeEach(async () => {
         this.TrustBet = await TrustBet.new()
     })
 
-    context('deploy contract', async () => {
-        it('deploys the contract', async () => {
+    context('deploy', async () => {
+        it('deploys successfully', async () => {
             expect(this.TrustBet.address != null)
         })
     })
@@ -57,6 +55,7 @@ describe('TrustBet', async () => {
                 betName,
                 betDescription,
                 betOptions,
+                betValue,
                 trustee,
             )
 
@@ -68,6 +67,7 @@ describe('TrustBet', async () => {
                     description: betDescription,
                     // Array equality is broken in JavaScript, the check is done below
                     // options: betOptions,
+                    value: betValue,
                     trustee: trustee,
                 },
             )
@@ -83,27 +83,28 @@ describe('TrustBet', async () => {
     context('start bet', async () => {
         const betId = new BN('0')
 
-        beforeEach(() => {
-            this.TrustBet.createBet(
+        beforeEach(async () => {
+            await this.TrustBet.createBet(
                 betName,
                 betDescription,
                 betOptions,
-                trustee,
-                {
+                betValue,
+                trustee, {
                     from: manager,
                 },
             )
         })
 
-        it('the manager can start the bet', async () => {
+        it('manager can start the bet', async () => {
             const startBetTx = await this.TrustBet.startBet(
-                betId, { from: manager }
-            );
+                betId, {
+                    from: manager,
+                },
+            )
 
             expectEvent(
                 startBetTx,
-                'BetStarted',
-                {
+                'BetStarted', {
                     betId: betId,
                 },
             )
@@ -112,10 +113,139 @@ describe('TrustBet', async () => {
         it('nobody else can start the bet', async () => {
             await expectRevert(
                 this.TrustBet.startBet(
-                    betId, {from: otherAccount}
+                    betId, {
+                        from: otherAccount,
+                    },
                 ),
-                'Only the manager can start the bet'
+                'Only the manager can start the bet',
             )
         })
     })
+
+    context('accept bet', async () => {
+        const betId = new BN('0')
+        const bettorAOptionIndex = new BN('0')
+        // const bettorBOption = 1;
+        const nonExistentOptionIndex = new BN('999')
+        const nonExistentBetId = new BN('999')
+
+        beforeEach(async () => {
+            await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee, {
+                    from: manager,
+                },
+            )
+        })
+
+        it('accept bet', async () => {
+            const acceptBetTx = await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+
+            expectEvent(
+                acceptBetTx,
+                'BetAccepted', {
+                    betId: betId,
+                    bettor: bettorA,
+                    optionIndex: bettorAOptionIndex,
+                    value: betValue,
+                },
+            )
+        })
+
+        it('cannot accept non existent bet', async () => {
+            await expectRevert(
+                this.TrustBet.acceptBet(
+                    nonExistentBetId,
+                    bettorAOptionIndex,
+                    {
+                        from: bettorA,
+                        value: betValue,
+                    },
+                ),
+                'Bet does not exist',
+            )
+        })
+
+        it('cannot accept non existent option', async () => {
+            await expectRevert(
+                this.TrustBet.acceptBet(
+                    betId,
+                    nonExistentOptionIndex,
+                    {
+                        from: bettorA,
+                        value: betValue,
+                    },
+                ),
+                'Option does not exist',
+            )
+        })
+
+        it('cannot accept without sending the value', async () => {
+            await expectRevert(
+                this.TrustBet.acceptBet(
+                    betId,
+                    bettorAOptionIndex,
+                    {
+                        from: bettorA,
+                        value: 0,
+                    },
+                ),
+                'Sent value does not match bet value',
+            )
+        })
+
+        it('same bettor cannot accept the same bet twice', async () => {
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex,
+                {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+
+            await expectRevert(
+                this.TrustBet.acceptBet(
+                    betId,
+                    bettorAOptionIndex,
+                    {
+                        from: bettorA,
+                        value: betValue,
+                    },
+                ),
+                'Cannot accept the same bet twice',
+            )
+        })
+    })
+
+    // context('close bet', async () => {
+    //     const betId = 0;
+
+    //     beforeEach(async () => {
+    //         await this.TrustBet.createBet(
+    //             betName,
+    //             betDescription,
+    //             betOptions,
+    //             trustee,
+    //             {
+    //                 from: manager,
+    //             },
+    //         )
+    //     })
+
+    //     it('manager can close the bet if all bettors posted results', async () => {
+    //         await this.TrustBet.closeBet(
+    //             betId
+    //         )
+    //     })
+    // })
 })

@@ -8,6 +8,7 @@ interface ITrustBet {
         string name,
         string description,
         string[] options,
+        uint value,
         address trustee
     );
 
@@ -15,6 +16,7 @@ interface ITrustBet {
         string calldata name,
         string calldata description,
         string[] calldata options,
+        uint value,
         address trustee
     ) external returns (uint betId);
 
@@ -22,12 +24,25 @@ interface ITrustBet {
         uint betId
     );
 
+    // event BetClosed(
+    //     uint betId,
+    //     uint winningOptionIndex
+    // );
+
     function startBet(uint betId) external;
 
     // function closeBet(uint betId) external;
 
-    // // Better actions
-    // function acceptBet(uint betId, string calldata option) external payable;
+    // // Bettor actions
+
+    event BetAccepted(
+        uint betId,
+        address bettor,
+        uint optionIndex,
+        uint value
+    );
+
+    function acceptBet(uint betId, uint optionIndex) external payable;
 
     // function postBetResult(
     //     uint betId,

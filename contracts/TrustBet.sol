@@ -15,13 +15,29 @@ contract TrustBet is ITrustBet {
         Cancelled
     }
 
+    struct Bettor {
+        uint optionIndex;
+        bool exists;
+    }
+
     struct Bet {
+        // Details
         string name;
         string description;
         string[] options;
+        uint value;
+
+        // Trustee
         address trustee;
-        BetStatus status;
+
+        // Manager
         address manager;
+
+        // Status
+        BetStatus status;
+
+        // Bettors
+        mapping(address => Bettor) bettors;
     }
 
     Bet[] private _bets;
@@ -38,6 +54,7 @@ contract TrustBet is ITrustBet {
         string memory name,
         string memory description,
         string[] memory options,
+        uint value,
         address trustee
     )
         public
@@ -50,6 +67,7 @@ contract TrustBet is ITrustBet {
             name: name,
             description: description,
             options: options,
+            value: value,
             trustee: trustee,
             manager: msg.sender,
             status: BetStatus.Initialized
@@ -62,6 +80,7 @@ contract TrustBet is ITrustBet {
             name,
             description,
             options,
+            value,
             trustee
         );
 
@@ -91,5 +110,38 @@ contract TrustBet is ITrustBet {
     }
 
     /**
+        @notice The Bettor can accept a bet and also has to send the funds.
+        @param betId the id of the bet to be accepted
+        @param optionIndex the option picked by the Bettor
      */
+    function acceptBet(
+        uint betId,
+        uint optionIndex
+    )
+        public
+        payable
+        override(ITrustBet)
+    {
+        require(betId <= _bets.length, "Bet does not exist");
+
+        Bet storage bet = _bets[betId];
+
+        require(optionIndex <= bet.options.length, "Option does not exist");
+
+        require(msg.value == bet.value, "Sent value does not match bet value");
+
+        require(bet.bettors[msg.sender].exists == false, "Cannot accept the same bet twice");
+
+        // Add bettor
+        Bettor storage bettor = bet.bettors[msg.sender];
+        bettor.exists = true;
+        bettor.optionIndex = optionIndex;
+
+        emit BetAccepted({
+            betId: betId,
+            bettor: msg.sender,
+            optionIndex: optionIndex,
+            value: msg.value
+        });
+    }
 }

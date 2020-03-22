@@ -126,7 +126,7 @@ contract TrustBet is ITrustBet {
 
         Bet storage bet = _bets[betId];
 
-        require(bet.status == BetStatus.Initialized, "Can only accept bet when bet is initialized");
+        require(bet.status == BetStatus.Initialized, "Can only accept when bet is initialized");
 
         require(optionIndex <= bet.options.length, "Option does not exist");
 
@@ -146,4 +146,21 @@ contract TrustBet is ITrustBet {
             value: msg.value
         });
     }
+
+    /**
+        @notice The Manager can close the bet after which no additional
+        Bettors can join the bet.
+        @param betId the id of the bet to be closed
+     */
+    function closeBet(
+        uint betId
+    )
+        public
+        override(ITrustBet)
+    {
+        Bet storage bet = _bets[betId];
+
+        require(msg.sender == bet.manager, "Only the manager can close the bet");
+    }
+
 }

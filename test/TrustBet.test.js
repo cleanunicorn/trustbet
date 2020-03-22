@@ -30,6 +30,7 @@ const [
     manager,
     trustee,
     bettorA,
+    bettorB,
     otherAccount,
 ] = accounts
 
@@ -125,7 +126,6 @@ describe('TrustBet', async () => {
     context('accept bet', async () => {
         const betId = new BN('0')
         const bettorAOptionIndex = new BN('0')
-        // const bettorBOption = 1;
         const nonExistentOptionIndex = new BN('999')
         const nonExistentBetId = new BN('999')
 
@@ -165,8 +165,7 @@ describe('TrustBet', async () => {
             await expectRevert(
                 this.TrustBet.acceptBet(
                     nonExistentBetId,
-                    bettorAOptionIndex,
-                    {
+                    bettorAOptionIndex, {
                         from: bettorA,
                         value: betValue,
                     },
@@ -179,8 +178,7 @@ describe('TrustBet', async () => {
             await expectRevert(
                 this.TrustBet.acceptBet(
                     betId,
-                    nonExistentOptionIndex,
-                    {
+                    nonExistentOptionIndex, {
                         from: bettorA,
                         value: betValue,
                     },
@@ -193,8 +191,7 @@ describe('TrustBet', async () => {
             await expectRevert(
                 this.TrustBet.acceptBet(
                     betId,
-                    bettorAOptionIndex,
-                    {
+                    bettorAOptionIndex, {
                         from: bettorA,
                         value: 0,
                     },
@@ -206,8 +203,7 @@ describe('TrustBet', async () => {
         it('same bettor cannot accept the same bet twice', async () => {
             await this.TrustBet.acceptBet(
                 betId,
-                bettorAOptionIndex,
-                {
+                bettorAOptionIndex, {
                     from: bettorA,
                     value: betValue,
                 },
@@ -216,8 +212,7 @@ describe('TrustBet', async () => {
             await expectRevert(
                 this.TrustBet.acceptBet(
                     betId,
-                    bettorAOptionIndex,
-                    {
+                    bettorAOptionIndex, {
                         from: bettorA,
                         value: betValue,
                     },
@@ -228,15 +223,15 @@ describe('TrustBet', async () => {
 
         it('cannot accept after the bet started', async () => {
             await this.TrustBet.startBet(
-                betId,
-                {from:manager},
+                betId, {
+                    from: manager
+                },
             )
 
             await expectRevert(
                 this.TrustBet.acceptBet(
                     betId,
-                    bettorAOptionIndex,
-                    {
+                    bettorAOptionIndex, {
                         from: bettorA,
                         value: betValue,
                     }
@@ -248,25 +243,65 @@ describe('TrustBet', async () => {
         // cancelled
     })
 
-    // context('close bet', async () => {
-    //     const betId = 0;
+    context('close bet', async () => {
+        const betId = new BN('0')
+        const bettorAOptionIndex = new BN('0')
+        const bettorBOptionIndex = new BN('1')
 
-    //     beforeEach(async () => {
-    //         await this.TrustBet.createBet(
-    //             betName,
-    //             betDescription,
-    //             betOptions,
-    //             trustee,
-    //             {
-    //                 from: manager,
-    //             },
-    //         )
-    //     })
+        beforeEach(async () => {
+            const createBetTx = await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee, {
+                    from: manager,
+                },
+            )
 
-    //     it('manager can close the bet if all bettors posted results', async () => {
-    //         await this.TrustBet.closeBet(
-    //             betId
-    //         )
-    //     })
-    // })
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex,
+                {
+                    from: bettorA,
+                    value: betValue
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorBOptionIndex,
+                {
+                    from: bettorB,
+                    value: betValue,
+                }
+            )
+        })
+
+        it('manager can close the bet', async () => {
+            await this.TrustBet.closeBet(
+                betId,
+                {
+                    from: manager
+                }
+            )
+        })
+
+        it('only manager can close the bet', async () => {
+            await expectRevert(
+                this.TrustBet.closeBet(
+                betId,
+                {
+                    from: otherAccount,
+                    }),
+                'Only the manager can close the bet'
+            )
+        })
+
+        // it('manager can close the bet if all bettors posted results', async () => {
+        //     await this.TrustBet.closeBet(
+        //         betId
+        //     )
+        // })
+    })
 })

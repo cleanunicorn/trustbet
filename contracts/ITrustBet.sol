@@ -31,7 +31,7 @@ interface ITrustBet {
 
     function startBet(uint betId) external;
 
-    // function closeBet(uint betId) external;
+    function closeBet(uint betId) external;
 
     // // Bettor actions
 

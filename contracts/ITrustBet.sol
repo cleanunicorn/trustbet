@@ -2,6 +2,36 @@ pragma solidity >= 0.6.0;
 pragma experimental ABIEncoderV2;
 
 interface ITrustBet {
+    /**
+        @notice Returns bet details
+     */
+    function betDetails(
+        uint betId
+    ) external view returns (
+        // betId
+        uint,
+        // name
+        string memory,
+        // description
+        string memory,
+        // options
+        string[] memory,
+        // value
+        uint,
+        // manager
+        address,
+        // trustee
+        address,
+        // bettorsCount
+        uint
+    );
+
+    // function bettorOption(
+    //     uint betId,
+    //     address bettor,
+
+    // )
+
     // Manager actions
     event CreatedBet(
         uint betId,

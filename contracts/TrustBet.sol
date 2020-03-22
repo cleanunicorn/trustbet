@@ -33,10 +33,12 @@ contract TrustBet is ITrustBet {
         // Manager
         address manager;
 
+        // Bettors
+        address[] bettorsArray;
+
         // Status
         BetStatus status;
 
-        // Bettors
         mapping(address => Bettor) bettors;
     }
 
@@ -63,15 +65,16 @@ contract TrustBet is ITrustBet {
             uint
         )
     {
-        _bets.push(Bet({
-            name: name,
-            description: description,
-            options: options,
-            value: value,
-            trustee: trustee,
-            manager: msg.sender,
-            status: BetStatus.Initialized
-        }));
+        Bet memory bet;
+        bet.name = name;
+        bet.description = description;
+        bet.options = options;
+        bet.value = value;
+        bet.trustee = trustee;
+        bet.manager = msg.sender;
+        bet.status = BetStatus.Initialized;
+
+        _bets.push(bet);
 
         uint betId = _bets.length - 1;
 
@@ -85,6 +88,57 @@ contract TrustBet is ITrustBet {
         );
 
         return betId;
+    }
+
+    /**
+        @notice Returns information about a created bet
+        @param betId the id  of the bet
+     */
+    function betDetails(
+        uint betId
+    )
+        external
+        view
+        override(ITrustBet)
+        returns (
+            // betId
+            uint,
+            // name
+            string memory,
+            // description
+            string memory,
+            // options
+            string[] memory,
+            // value
+            uint,
+            // manager
+            address,
+            // trustee
+            address,
+            // bettorsCount
+            uint
+        )
+    {
+        Bet memory bet = _bets[betId];
+
+        return (
+            // betId
+            betId,
+            // name
+            bet.name,
+            // description
+            bet.description,
+            // options
+            bet.options,
+            // value
+            bet.value,
+            // manager
+            bet.manager,
+            // trustee
+            bet.trustee,
+            // bettorsCount
+            bet.bettorsArray.length
+        );
     }
 
     /**
@@ -138,6 +192,8 @@ contract TrustBet is ITrustBet {
         Bettor storage bettor = bet.bettors[msg.sender];
         bettor.exists = true;
         bettor.optionIndex = optionIndex;
+
+        bet.bettorsArray.push(msg.sender);
 
         emit BetAccepted({
             betId: betId,

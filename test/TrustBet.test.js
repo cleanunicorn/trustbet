@@ -40,6 +40,12 @@ const arrayEqual = (a, b) => {
 }
 
 describe('TrustBet', async () => {
+    const betId = new BN('0')
+    const bettorAOptionIndex = new BN('0')
+    const bettorBOptionIndex = new BN('1')
+    const nonExistentOptionIndex = new BN('999')
+    const nonExistentBetId = new BN('999')
+
     beforeEach(async () => {
         this.TrustBet = await TrustBet.new()
     })
@@ -81,9 +87,36 @@ describe('TrustBet', async () => {
         })
     })
 
-    context('start bet', async () => {
-        const betId = new BN('0')
+    context('get bet', async () => {
+        beforeEach(async () => {
+            await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee, {
+                    from: manager,
+                },
+            )
+        })
 
+        it('details match', async () => {
+            const betDetailsCall = await this.TrustBet.betDetails.call(
+                betId,
+            )
+
+            expect(betDetailsCall[0], 'match betId').to.be.bignumber.equal(betId)
+            expect(betDetailsCall[1], 'match name').to.be.equal(betName)
+            expect(betDetailsCall[2], 'match description').to.be.equal(betDescription)
+            expect(arrayEqual(betDetailsCall[3], betOptions), 'match options').to.be.equal(true)
+            expect(betDetailsCall[4], 'match value').to.be.bignumber.equal(betValue)
+            expect(betDetailsCall[5], 'match manager').to.be.equal(manager)
+            expect(betDetailsCall[6], 'match trustee').to.be.equal(trustee)
+            expect(betDetailsCall[7], 'match bettor count').to.be.bignumber.equal(new BN('0'))
+        })
+    })
+
+    context('start bet', async () => {
         beforeEach(async () => {
             await this.TrustBet.createBet(
                 betName,
@@ -124,11 +157,6 @@ describe('TrustBet', async () => {
     })
 
     context('accept bet', async () => {
-        const betId = new BN('0')
-        const bettorAOptionIndex = new BN('0')
-        const nonExistentOptionIndex = new BN('999')
-        const nonExistentBetId = new BN('999')
-
         beforeEach(async () => {
             await this.TrustBet.createBet(
                 betName,
@@ -224,7 +252,7 @@ describe('TrustBet', async () => {
         it('cannot accept after the bet started', async () => {
             await this.TrustBet.startBet(
                 betId, {
-                    from: manager
+                    from: manager,
                 },
             )
 
@@ -234,7 +262,7 @@ describe('TrustBet', async () => {
                     bettorAOptionIndex, {
                         from: bettorA,
                         value: betValue,
-                    }
+                    },
                 ),
                 'Can only accept when bet is initialized',
             )
@@ -244,12 +272,8 @@ describe('TrustBet', async () => {
     })
 
     context('close bet', async () => {
-        const betId = new BN('0')
-        const bettorAOptionIndex = new BN('0')
-        const bettorBOptionIndex = new BN('1')
-
         beforeEach(async () => {
-            const createBetTx = await this.TrustBet.createBet(
+            this.TrustBet.createBet(
                 betName,
                 betDescription,
                 betOptions,
@@ -261,40 +285,36 @@ describe('TrustBet', async () => {
 
             await this.TrustBet.acceptBet(
                 betId,
-                bettorAOptionIndex,
-                {
+                bettorAOptionIndex, {
                     from: bettorA,
-                    value: betValue
+                    value: betValue,
                 },
             )
 
             await this.TrustBet.acceptBet(
                 betId,
-                bettorBOptionIndex,
-                {
+                bettorBOptionIndex, {
                     from: bettorB,
                     value: betValue,
-                }
+                },
             )
         })
 
         it('manager can close the bet', async () => {
             await this.TrustBet.closeBet(
-                betId,
-                {
-                    from: manager
-                }
+                betId, {
+                    from: manager,
+                },
             )
         })
 
         it('only manager can close the bet', async () => {
             await expectRevert(
                 this.TrustBet.closeBet(
-                betId,
-                {
-                    from: otherAccount,
+                    betId, {
+                        from: otherAccount,
                     }),
-                'Only the manager can close the bet'
+                'Only the manager can close the bet',
             )
         })
 

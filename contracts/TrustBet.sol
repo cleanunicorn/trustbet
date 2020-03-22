@@ -126,6 +126,8 @@ contract TrustBet is ITrustBet {
 
         Bet storage bet = _bets[betId];
 
+        require(bet.status == BetStatus.Initialized, "Can only accept bet when bet is initialized");
+
         require(optionIndex <= bet.options.length, "Option does not exist");
 
         require(msg.value == bet.value, "Sent value does not match bet value");

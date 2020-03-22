@@ -225,6 +225,27 @@ describe('TrustBet', async () => {
                 'Cannot accept the same bet twice',
             )
         })
+
+        it('cannot accept after the bet started', async () => {
+            await this.TrustBet.startBet(
+                betId,
+                {from:manager},
+            )
+
+            await expectRevert(
+                this.TrustBet.acceptBet(
+                    betId,
+                    bettorAOptionIndex,
+                    {
+                        from: bettorA,
+                        value: betValue,
+                    }
+                ),
+                'Can only accept when bet is initialized',
+            )
+        })
+        // closed
+        // cancelled
     })
 
     // context('close bet', async () => {

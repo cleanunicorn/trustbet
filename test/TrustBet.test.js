@@ -87,7 +87,7 @@ describe('TrustBet', async () => {
         })
     })
 
-    context('get bet', async () => {
+    context('bet', async () => {
         beforeEach(async () => {
             await this.TrustBet.createBet(
                 betName,
@@ -113,6 +113,60 @@ describe('TrustBet', async () => {
             expect(betDetailsCall[5], 'match manager').to.be.equal(manager)
             expect(betDetailsCall[6], 'match trustee').to.be.equal(trustee)
             expect(betDetailsCall[7], 'match bettor count').to.be.bignumber.equal(new BN('0'))
+        })
+
+        // TODO
+        it('fails if the bet does not exist', async () => { })
+    })
+
+    context('bet options', async () => {
+        beforeEach(async () => {
+            await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee, {
+                    from: manager,
+                },
+            )
+        })
+
+        it('returns selected bet option', async () => {
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+
+            const betSelectedOptionCall = await this.TrustBet.betSelectedOption.call(
+                betId,
+                bettorA,
+            )
+
+            expect(betSelectedOptionCall, 'match selected option').to.be.bignumber.equal(bettorAOptionIndex)
+        })
+
+        it('fails if the bet does not exist', async () => {
+            await expectRevert(
+                this.TrustBet.betSelectedOption.call(
+                    nonExistentBetId,
+                    bettorA,
+                ),
+                'Bet does not exist',
+            )
+        })
+
+        it('fails if the bettor did not accept bet', async () => {
+            await expectRevert(
+                this.TrustBet.betSelectedOption.call(
+                    betId,
+                    bettorA,
+                ),
+                'Bettor did not accept bet',
+            )
         })
     })
 
@@ -267,8 +321,8 @@ describe('TrustBet', async () => {
                 'Can only accept when bet is initialized',
             )
         })
-        // closed
-        // cancelled
+        // cannot accept after the bet closed
+        // cannot accept after the bet cancelled
     })
 
     context('close bet', async () => {

@@ -142,6 +142,32 @@ contract TrustBet is ITrustBet {
     }
 
     /**
+        @notice Return index of selected bet option by the bettor
+        @dev Fails if the bet does not exist or if the bettor did not select any option
+        @param betId the id of the bet
+        @param bettor the address of the bettor
+        @return index of selected option by the bettor
+     */
+    function betSelectedOption(
+        uint betId,
+        address bettor
+    )
+        external
+        view
+        override(ITrustBet)
+        returns(
+            // selectedOptionIndex
+            uint
+        )
+    {
+        require(betId <= _bets.length, "Bet does not exist");
+
+        require(_bets[betId].bettors[bettor].exists, "Bettor did not accept bet");
+
+        return (_bets[betId].bettors[bettor].optionIndex);
+    }
+
+    /**
         @notice Start the bet after all Bettors joined. No additional Bettors can join the bet after it started.
         @dev Only the creator of the bet can start it
         @param betId The id of the bet that should start

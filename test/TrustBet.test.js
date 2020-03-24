@@ -115,8 +115,14 @@ describe('TrustBet', async () => {
             expect(betDetailsCall[7], 'match bettor count').to.be.bignumber.equal(new BN('0'))
         })
 
-        // TODO
-        it('fails if the bet does not exist', async () => { })
+        it('fails if the bet does not exist', async () => {
+            await expectRevert(
+                this.TrustBet.betDetails.call(
+                    nonExistentBetId,
+                ),
+                'Bet does not exist',
+            )
+        })
     })
 
     context('bet options', async () => {

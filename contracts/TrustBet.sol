@@ -119,6 +119,8 @@ contract TrustBet is ITrustBet {
             uint
         )
     {
+        require(betId <= _bets.length, "Bet does not exist");
+
         Bet memory bet = _bets[betId];
 
         return (

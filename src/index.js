@@ -1,10 +1,10 @@
-const Web3 = require('web3');
+const Web3 = require('web3')
 
 const { abi } = require('../build/contracts/TrustBet.json')
 
-async function main() {
-    const web3 = new Web3(`http://localhost:7545`)
-    const accounts = await web3.eth.getAccounts();
+async function main () {
+    const web3 = new Web3('http://localhost:7545')
+    const accounts = await web3.eth.getAccounts()
     // console.log(accounts);
 
     /* You need to add the deployed contract address in TrustBetAddress
@@ -19,25 +19,25 @@ async function main() {
     ✓ Instance created at 0xB9A3807c287b001619c21f0c3ae4BeccaDb7e6D1
     0xB9A3807c287b001619c21f0c3ae4BeccaDb7e6D1
     */
-    const TrustBetAddress = "0xB9A3807c287b001619c21f0c3ae4BeccaDb7e6D1"
-    const TrustBet = new web3.eth.Contract(abi, TrustBetAddress);
+    const TrustBetAddress = '0xB9A3807c287b001619c21f0c3ae4BeccaDb7e6D1'
+    const TrustBet = new web3.eth.Contract(abi, TrustBetAddress)
 
-    const [manager, trustee, bettorA, bettorB] = accounts
+    const [manager, trustee] = accounts
 
     const createBetTx = await TrustBet.methods.createBet(
         // name
-        "Answer to life",
+        'Answer to life',
         // description
-        "What is the answer to life the universe and everything?",
+        'What is the answer to life the universe and everything?',
         // options
         [
-            "42",
-            "Money",
+            '42',
+            'Money',
         ],
         // value
         new Web3.utils.BN('10'),
         // trustee
-        trustee
+        trustee,
     ).send(
         {
             from: manager,
@@ -46,7 +46,7 @@ async function main() {
     )
 
     // Full emitted event
-    console.log(createBetTx.events['CreatedBet'])
+    console.log(createBetTx.events.CreatedBet)
 }
 
-main();
+main()

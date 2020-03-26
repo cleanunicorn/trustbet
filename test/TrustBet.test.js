@@ -20,8 +20,8 @@ const betName = 'The answer to life'
 const betDescription = 'What is the answer to life the universe and everything?'
 const betOptions = [
     '42',
-    'No answer',
-    '0',
+    'Money',
+    'Fame',
 ]
 const betValue = new BN('10')
 
@@ -79,7 +79,7 @@ describe('TrustBet', async () => {
                 },
             )
 
-            // HACK: Check option equality
+            // Check option equality
             expect(
                 arrayEqual(betOptions, createBetTx.logs[0].args.options),
                 'bet options should match',

@@ -114,3 +114,7 @@ build/
 
 # Openzeppelin temp folder
 .openzeppelin/
+.openzeppelin/.session
+
+# Secrets
+./secrets.json

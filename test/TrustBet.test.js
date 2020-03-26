@@ -45,6 +45,7 @@ describe('TrustBet', async () => {
     const bettorBOptionIndex = new BN('1')
     const nonExistentOptionIndex = new BN('999')
     const nonExistentBetId = new BN('999')
+    const realBetResult = new BN('0')
 
     beforeEach(async () => {
         this.TrustBet = await TrustBet.new()
@@ -189,7 +190,7 @@ describe('TrustBet', async () => {
             )
         })
 
-        it('manager can start the bet', async () => {
+        it('manager can start bet', async () => {
             const startBetTx = await this.TrustBet.startBet(
                 betId, {
                     from: manager,
@@ -204,7 +205,7 @@ describe('TrustBet', async () => {
             )
         })
 
-        it('nobody else can start the bet', async () => {
+        it('nobody else can start bet', async () => {
             await expectRevert(
                 this.TrustBet.startBet(
                     betId, {
@@ -229,7 +230,7 @@ describe('TrustBet', async () => {
             )
         })
 
-        it('accept bet', async () => {
+        it('bettor can accept bet', async () => {
             const acceptBetTx = await this.TrustBet.acceptBet(
                 betId,
                 bettorAOptionIndex, {
@@ -331,9 +332,9 @@ describe('TrustBet', async () => {
         // cannot accept after the bet cancelled
     })
 
-    context('close bet', async () => {
+    context('post bet result', async () => {
         beforeEach(async () => {
-            this.TrustBet.createBet(
+            await this.TrustBet.createBet(
                 betName,
                 betDescription,
                 betOptions,
@@ -360,28 +361,84 @@ describe('TrustBet', async () => {
             )
         })
 
-        it('manager can close the bet', async () => {
-            await this.TrustBet.closeBet(
-                betId, {
-                    from: manager,
+        it('bettor can post bet result', async () => {
+            await this.TrustBet.postBetResult(
+                betId,
+                realBetResult, {
+                    from: bettorA,
                 },
             )
         })
 
-        it('only manager can close the bet', async () => {
-            await expectRevert(
-                this.TrustBet.closeBet(
-                    betId, {
-                        from: otherAccount,
-                    }),
-                'Only the manager can close the bet',
+        it('post bet result returns event', async () => {
+            const postBetResultTx = await this.TrustBet.postBetResult(
+                betId,
+                realBetResult, {
+                    from: bettorA,
+                },
+            )
+
+            expectEvent(
+                postBetResultTx,
+                'BetResultPosted', {
+                    betId: betId,
+                    optionIndex: realBetResult,
+                },
             )
         })
-
-        // it('manager can close the bet if all bettors posted results', async () => {
-        //     await this.TrustBet.closeBet(
-        //         betId
-        //     )
-        // })
     })
+
+    // context('close bet', async () => {
+    //     beforeEach(async () => {
+    //         this.TrustBet.createBet(
+    //             betName,
+    //             betDescription,
+    //             betOptions,
+    //             betValue,
+    //             trustee, {
+    //                 from: manager,
+    //             },
+    //         )
+
+    //         await this.TrustBet.acceptBet(
+    //             betId,
+    //             bettorAOptionIndex, {
+    //                 from: bettorA,
+    //                 value: betValue,
+    //             },
+    //         )
+
+    //         await this.TrustBet.acceptBet(
+    //             betId,
+    //             bettorBOptionIndex, {
+    //                 from: bettorB,
+    //                 value: betValue,
+    //             },
+    //         )
+    //     })
+
+    //     it('manager can close the bet', async () => {
+    //         await this.TrustBet.closeBet(
+    //             betId, {
+    //                 from: manager,
+    //             },
+    //         )
+    //     })
+
+    //     it('only manager can close the bet', async () => {
+    //         await expectRevert(
+    //             this.TrustBet.closeBet(
+    //                 betId, {
+    //                     from: otherAccount,
+    //                 }),
+    //             'Only the manager can close the bet',
+    //         )
+    //     })
+
+    //     // it('manager can close the bet if all bettors posted results', async () => {
+    //     //     await this.TrustBet.closeBet(
+    //     //         betId
+    //     //     )
+    //     // })
+    // })
 })

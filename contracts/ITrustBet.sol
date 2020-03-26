@@ -83,13 +83,17 @@ interface ITrustBet {
         uint value
     );
 
+    event BetResultPosted(
+        uint betId,
+        uint optionIndex
+    );
+
     function acceptBet(uint betId, uint optionIndex) external payable;
 
-    // function postBetResult(
-    //     uint betId,
-    //     string calldata option
-    // )
-    // external;
+    function postBetResult(
+        uint betId,
+        uint optionIndex
+    ) external;
 
     // collectWinningBet
 

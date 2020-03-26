@@ -35,11 +35,10 @@ contract TrustBet is ITrustBet {
 
         // Bettors
         address[] bettorsArray;
+        mapping(address => Bettor) bettors;
 
         // Status
         BetStatus status;
-
-        mapping(address => Bettor) bettors;
     }
 
     Bet[] private _bets;
@@ -229,6 +228,24 @@ contract TrustBet is ITrustBet {
             optionIndex: optionIndex,
             value: msg.value
         });
+    }
+
+    /**
+        @notice Bettor should post the real outcome of the bet.
+        @param betId the id of the bet
+        @param optionIndex the real outcome of the bet identified by the index
+     */
+    function postBetResult(
+        uint betId,
+        uint optionIndex
+    )
+        public
+        override(ITrustBet)
+    {
+        emit BetResultPosted(
+            betId,
+            optionIndex
+        );
     }
 
     /**

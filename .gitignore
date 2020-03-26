@@ -117,4 +117,4 @@ build/
 .openzeppelin/.session
 
 # Secrets
-./secrets.json
+secrets.json

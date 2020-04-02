@@ -276,14 +276,17 @@ contract TrustBet is ITrustBet {
         public
         override(ITrustBet)
     {
-        // TODO: check bet exists
+        require(betId <= _bets.length, "Bet does not exist");
 
         Bet storage bet = _bets[betId];
 
-        // TODO: check bet status
-        // TODO: check bet option
-        // TODO: check posted twice
-        // TODO: check bettor exists
+        require(bet.status == BetStatus.Started, "Can only post result when bet is started");
+
+        require(optionIndex <= bet.options.length, "Option does not exist");
+
+        require(bet.bettors[msg.sender].exists, "Bettor is not part of the bet");
+
+        require(bet.bettors[msg.sender].result.exists == false, "Bettor already posted result");
 
         PostedResult memory postedResult;
         postedResult.exists = true;

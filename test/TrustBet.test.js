@@ -359,6 +359,12 @@ describe('TrustBet', async () => {
                     value: betValue,
                 },
             )
+
+            await this.TrustBet.startBet(
+                betId, {
+                    from: manager,
+                },
+            )
         })
 
         it('bettor can post bet result', async () => {
@@ -385,6 +391,81 @@ describe('TrustBet', async () => {
                     optionIndex: realBetResult,
                 },
             )
+        })
+
+        it('fails if the bet does not exist', async () => {
+            await expectRevert(
+                this.TrustBet.postBetResult(
+                    nonExistentBetId,
+                    realBetResult,
+                ),
+                'Bet does not exist',
+            )
+        })
+
+        context('successful only if bet has started status', async () => {
+            it('fails if initialized', async () => {
+                const createBetTx = await this.TrustBet.createBet(
+                    betName,
+                    betDescription,
+                    betOptions,
+                    betValue,
+                    trustee, {
+                        from: manager,
+                    },
+                )
+                const createdBetId = createBetTx.logs[0].args.betId;
+
+                await expectRevert(
+                    this.TrustBet.postBetResult(
+                        createdBetId,
+                        realBetResult,
+                    ),
+                    'Can only post result when bet is started',
+                )
+            })
+        })
+
+        it('fails if bet option does not exist', async () => {
+            await expectRevert(
+                this.TrustBet.postBetResult(
+                    betId,
+                    nonExistentOptionIndex,
+                ),
+                'Option does not exist',
+            )
+        })
+
+        it('fails if bettor posts result any result twice', async () => {
+            await this.TrustBet.postBetResult(
+                betId,
+                realBetResult, {
+                    from: bettorA
+                }
+            )
+
+            await expectRevert(
+                this.TrustBet.postBetResult(
+                    betId,
+                    realBetResult, {
+                        from: bettorA
+                    }
+                ),
+                'Bettor already posted result'
+            )
+        })
+
+        it('fails if bettor was not part of the started bet', async () => {
+            await expectRevert(
+                this.TrustBet.postBetResult(
+                    betId,
+                    realBetResult, {
+                        from: otherAccount,
+                    },
+                ),
+                'Bettor is not part of the bet'
+            )
+
         })
 
         it('can return post bet result', async () => {

@@ -8,13 +8,6 @@ import "./ITrustBet.sol";
     @title A contract that intermediates a way for friends to create bets
  */
 contract TrustBet is ITrustBet {
-    enum BetStatus {
-        Initialized,
-        Started,
-        Closed,
-        Cancelled
-    }
-
     struct PostedResult {
         uint postedOptionIndex;
         bool exists;
@@ -121,7 +114,9 @@ contract TrustBet is ITrustBet {
             // trustee
             address,
             // bettorsCount
-            uint
+            uint,
+            // status
+            BetStatus
         )
     {
         require(betId <= _bets.length, "Bet does not exist");
@@ -144,7 +139,9 @@ contract TrustBet is ITrustBet {
             // trustee
             bet.trustee,
             // bettorsCount
-            bet.bettorsArray.length
+            bet.bettorsArray.length,
+            // status
+            bet.status
         );
     }
 

@@ -3,6 +3,16 @@ pragma experimental ABIEncoderV2;
 
 interface ITrustBet {
     /**
+        @notice defines bet status
+     */
+    enum BetStatus {
+        Initialized,
+        Started,
+        Closed,
+        Cancelled
+    }
+
+    /**
         @notice Returns bet details
      */
     function betDetails(
@@ -23,7 +33,9 @@ interface ITrustBet {
         // trustee
         address,
         // bettorsCount
-        uint
+        uint,
+        // status
+        BetStatus
     );
 
     /**

@@ -27,9 +27,9 @@ const betValue = new BN('10')
 
 // Bet status
 const BET_STATUS_INITIALIZED = new BN('0')
-const BET_STATUS_STARTED = new BN('1')
-const BET_STATUS_CLOSED = new BN('2')
-const BET_STATUS_CANCELLED = new BN('3')
+// const BET_STATUS_STARTED = new BN('1')
+// const BET_STATUS_CLOSED = new BN('2')
+// const BET_STATUS_CANCELLED = new BN('3')
 
 // Actors
 const [
@@ -120,7 +120,7 @@ describe('TrustBet', async () => {
             expect(betDetailsCall[5], 'match manager').to.be.equal(manager)
             expect(betDetailsCall[6], 'match trustee').to.be.equal(trustee)
             expect(betDetailsCall[7], 'match bettor count').to.be.bignumber.equal(new BN('0'))
-            expect(betDetailsCall[8], 'match status').to.be.bignumber.equal(BET_STATUS_INITIALIZED);
+            expect(betDetailsCall[8], 'match status').to.be.bignumber.equal(BET_STATUS_INITIALIZED)
         })
 
         it('fails if the bet does not exist', async () => {
@@ -421,7 +421,7 @@ describe('TrustBet', async () => {
                         from: manager,
                     },
                 )
-                const createdBetId = createBetTx.logs[0].args.betId;
+                const createdBetId = createBetTx.logs[0].args.betId
 
                 await expectRevert(
                     this.TrustBet.postBetResult(
@@ -447,16 +447,16 @@ describe('TrustBet', async () => {
             await this.TrustBet.postBetResult(
                 betId,
                 realBetResult, {
-                    from: bettorA
-                }
+                    from: bettorA,
+                },
             )
 
             await expectRevert(
                 this.TrustBet.postBetResult(
                     betId,
                     realBetResult, {
-                        from: bettorA
-                    }
+                        from: bettorA,
+                    },
                 ),
                 'Bettor already posted result',
             )
@@ -470,9 +470,8 @@ describe('TrustBet', async () => {
                         from: otherAccount,
                     },
                 ),
-                'Bettor is not part of the bet'
+                'Bettor is not part of the bet',
             )
-
         })
 
         it('can return post bet result', async () => {

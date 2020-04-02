@@ -37,6 +37,14 @@ interface ITrustBet {
         uint
     );
 
+    function betPostedResult(
+        uint betId,
+        address bettor
+    ) external view returns(
+        // postedOptionIndex
+        uint
+    );
+
     // function bettorOption(
     //     uint betId,
     //     address bettor,

@@ -15,9 +15,15 @@ contract TrustBet is ITrustBet {
         Cancelled
     }
 
+    struct PostedResult {
+        uint postedOptionIndex;
+        bool exists;
+    }
+
     struct Bettor {
         uint optionIndex;
         bool exists;
+        PostedResult result;
     }
 
     struct Bet {
@@ -169,6 +175,34 @@ contract TrustBet is ITrustBet {
     }
 
     /**
+        @notice Return index of posted result bet option by the bettor
+        @dev Fails
+        - if the bet does not exist
+        - if the bettor did not post any option
+        @param betId the id of the bet
+        @param bettor the address of the bettor
+        @return index of the posted option by the bettor
+     */
+    function betPostedResult(
+        uint betId,
+        address bettor
+    )
+        external
+        view
+        override(ITrustBet)
+        returns(
+            //postedOptionIndex
+            uint
+        )
+    {
+        // TODO: check bet exists
+        // TODO: check bettor posted
+
+        return _bets[betId].bettors[bettor].result.postedOptionIndex;
+    }
+
+
+    /**
         @notice Start the bet after all Bettors joined. No additional Bettors can join the bet after it started.
         @dev Only the creator of the bet can start it
         @param betId The id of the bet that should start
@@ -242,6 +276,22 @@ contract TrustBet is ITrustBet {
         public
         override(ITrustBet)
     {
+        // TODO: check bet exists
+
+        Bet storage bet = _bets[betId];
+
+        // TODO: check bet status
+        // TODO: check bet option
+        // TODO: check posted twice
+        // TODO: check bettor exists
+
+        PostedResult memory postedResult;
+        postedResult.exists = true;
+        postedResult.postedOptionIndex = optionIndex;
+
+        Bettor storage bettor = bet.bettors[msg.sender];
+        bettor.result = postedResult;
+
         emit BetResultPosted(
             betId,
             optionIndex

@@ -19,8 +19,8 @@ const TrustBet = contract.fromArtifact('TrustBet')
 const betName = 'The answer to life'
 const betDescription = 'What is the answer to life the universe and everything?'
 const betOptions = [
-    '42',
     'Money',
+    '42',
     'Fame',
 ]
 const betValue = new BN('10')
@@ -45,7 +45,7 @@ describe('TrustBet', async () => {
     const bettorBOptionIndex = new BN('1')
     const nonExistentOptionIndex = new BN('999')
     const nonExistentBetId = new BN('999')
-    const realBetResult = new BN('0')
+    const realBetResult = new BN('1')
 
     beforeEach(async () => {
         this.TrustBet = await TrustBet.new()
@@ -386,59 +386,21 @@ describe('TrustBet', async () => {
                 },
             )
         })
+
+        it('can return post bet result', async () => {
+            await this.TrustBet.postBetResult(
+                betId,
+                realBetResult, {
+                    from: bettorA,
+                },
+            )
+
+            const betPostedResultTx = await this.TrustBet.betPostedResult.call(
+                betId,
+                bettorA,
+            )
+
+            expect(betPostedResultTx, 'match posted bet result').to.be.bignumber.equal(realBetResult)
+        })
     })
-
-    // context('close bet', async () => {
-    //     beforeEach(async () => {
-    //         this.TrustBet.createBet(
-    //             betName,
-    //             betDescription,
-    //             betOptions,
-    //             betValue,
-    //             trustee, {
-    //                 from: manager,
-    //             },
-    //         )
-
-    //         await this.TrustBet.acceptBet(
-    //             betId,
-    //             bettorAOptionIndex, {
-    //                 from: bettorA,
-    //                 value: betValue,
-    //             },
-    //         )
-
-    //         await this.TrustBet.acceptBet(
-    //             betId,
-    //             bettorBOptionIndex, {
-    //                 from: bettorB,
-    //                 value: betValue,
-    //             },
-    //         )
-    //     })
-
-    //     it('manager can close the bet', async () => {
-    //         await this.TrustBet.closeBet(
-    //             betId, {
-    //                 from: manager,
-    //             },
-    //         )
-    //     })
-
-    //     it('only manager can close the bet', async () => {
-    //         await expectRevert(
-    //             this.TrustBet.closeBet(
-    //                 betId, {
-    //                     from: otherAccount,
-    //                 }),
-    //             'Only the manager can close the bet',
-    //         )
-    //     })
-
-    //     // it('manager can close the bet if all bettors posted results', async () => {
-    //     //     await this.TrustBet.closeBet(
-    //     //         betId
-    //     //     )
-    //     // })
-    // })
 })

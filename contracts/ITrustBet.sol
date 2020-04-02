@@ -2,6 +2,67 @@ pragma solidity >= 0.6.0;
 pragma experimental ABIEncoderV2;
 
 interface ITrustBet {
+    /**
+        @notice defines bet status
+     */
+    enum BetStatus {
+        Initialized,
+        Started,
+        Closed,
+        Cancelled
+    }
+
+    /**
+        @notice Returns bet details
+     */
+    function betDetails(
+        uint betId
+    ) external view returns (
+        // betId
+        uint,
+        // name
+        string memory,
+        // description
+        string memory,
+        // options
+        string[] memory,
+        // value
+        uint,
+        // manager
+        address,
+        // trustee
+        address,
+        // bettorsCount
+        uint,
+        // status
+        BetStatus
+    );
+
+    /**
+        @notice Return index of selected bet option by the bettor
+     */
+    function betSelectedOption(
+        uint betId,
+        address bettor
+    ) external view returns(
+        // selectedOptionIndex
+        uint
+    );
+
+    function betPostedResult(
+        uint betId,
+        address bettor
+    ) external view returns(
+        // postedOptionIndex
+        uint
+    );
+
+    // function bettorOption(
+    //     uint betId,
+    //     address bettor,
+
+    // )
+
     // Manager actions
     event CreatedBet(
         uint betId,
@@ -31,7 +92,7 @@ interface ITrustBet {
 
     function startBet(uint betId) external;
 
-    // function closeBet(uint betId) external;
+    function closeBet(uint betId) external;
 
     // // Bettor actions
 
@@ -42,13 +103,17 @@ interface ITrustBet {
         uint value
     );
 
+    event BetResultPosted(
+        uint betId,
+        uint optionIndex
+    );
+
     function acceptBet(uint betId, uint optionIndex) external payable;
 
-    // function postBetResult(
-    //     uint betId,
-    //     string calldata option
-    // )
-    // external;
+    function postBetResult(
+        uint betId,
+        uint optionIndex
+    ) external;
 
     // collectWinningBet
 

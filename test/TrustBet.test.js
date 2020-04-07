@@ -11,7 +11,6 @@ const {
     BN,
     expectEvent,
     expectRevert,
-    time,
 } = require('@openzeppelin/test-helpers')
 
 const TrustBet = contract.fromArtifact('TrustBet')
@@ -25,7 +24,7 @@ const betOptions = [
     'Fame',
 ]
 const betValue = new BN('10')
-const betExpirationDate = new BN(new Date().getTime() + 86400);
+const betExpirationDate = new BN(new Date().getTime() + 86400)
 
 // Bet status
 const BET_STATUS_INITIALIZED = new BN('0')

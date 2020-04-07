@@ -32,7 +32,7 @@ interface ITrustBet {
         address,
         // trustee
         address,
-        // bettorsCount
+        // expirationDate
         uint,
         // status
         BetStatus
@@ -70,7 +70,8 @@ interface ITrustBet {
         string description,
         string[] options,
         uint value,
-        address trustee
+        address trustee,
+        uint expirationDate
     );
 
     function createBet(
@@ -78,7 +79,8 @@ interface ITrustBet {
         string calldata description,
         string[] calldata options,
         uint value,
-        address trustee
+        address trustee,
+        uint expirationDate
     ) external returns (uint betId);
 
     event BetStarted(

@@ -32,6 +32,9 @@ contract TrustBet is ITrustBet {
         // Manager
         address manager;
 
+        // Expiration Date
+        uint expirationDate;
+
         // Bettors
         address[] bettorsArray;
         mapping(address => Bettor) bettors;
@@ -55,7 +58,8 @@ contract TrustBet is ITrustBet {
         string memory description,
         string[] memory options,
         uint value,
-        address trustee
+        address trustee,
+        uint expirationDate
     )
         public
         override(ITrustBet)
@@ -70,6 +74,7 @@ contract TrustBet is ITrustBet {
         bet.value = value;
         bet.trustee = trustee;
         bet.manager = msg.sender;
+        bet.expirationDate = expirationDate;
         bet.status = BetStatus.Initialized;
 
         _bets.push(bet);
@@ -82,7 +87,8 @@ contract TrustBet is ITrustBet {
             description,
             options,
             value,
-            trustee
+            trustee,
+            expirationDate
         );
 
         return betId;
@@ -113,7 +119,7 @@ contract TrustBet is ITrustBet {
             address,
             // trustee
             address,
-            // bettorsCount
+            // expirationDate
             uint,
             // status
             BetStatus
@@ -138,8 +144,8 @@ contract TrustBet is ITrustBet {
             bet.manager,
             // trustee
             bet.trustee,
-            // bettorsCount
-            bet.bettorsArray.length,
+            // expirationDate
+            bet.expirationDate,
             // status
             bet.status
         );

@@ -24,6 +24,7 @@ const betOptions = [
     'Fame',
 ]
 const betValue = new BN('10')
+const betExpirationDate = new BN(new Date().getTime() + 86400)
 
 // Bet status
 const BET_STATUS_INITIALIZED = new BN('0')
@@ -71,6 +72,7 @@ describe('TrustBet', async () => {
                 betOptions,
                 betValue,
                 trustee,
+                betExpirationDate,
             )
 
             expectEvent(
@@ -83,6 +85,7 @@ describe('TrustBet', async () => {
                     // options: betOptions,
                     value: betValue,
                     trustee: trustee,
+                    expirationDate: betExpirationDate,
                 },
             )
 
@@ -101,7 +104,8 @@ describe('TrustBet', async () => {
                 betDescription,
                 betOptions,
                 betValue,
-                trustee, {
+                trustee,
+                betExpirationDate, {
                     from: manager,
                 },
             )
@@ -119,7 +123,7 @@ describe('TrustBet', async () => {
             expect(betDetailsCall[4], 'match value').to.be.bignumber.equal(betValue)
             expect(betDetailsCall[5], 'match manager').to.be.equal(manager)
             expect(betDetailsCall[6], 'match trustee').to.be.equal(trustee)
-            expect(betDetailsCall[7], 'match bettor count').to.be.bignumber.equal(new BN('0'))
+            expect(betDetailsCall[7], 'match expiration date').to.be.bignumber.equal(betExpirationDate)
             expect(betDetailsCall[8], 'match status').to.be.bignumber.equal(BET_STATUS_INITIALIZED)
         })
 
@@ -140,7 +144,8 @@ describe('TrustBet', async () => {
                 betDescription,
                 betOptions,
                 betValue,
-                trustee, {
+                trustee,
+                betExpirationDate, {
                     from: manager,
                 },
             )
@@ -191,7 +196,8 @@ describe('TrustBet', async () => {
                 betDescription,
                 betOptions,
                 betValue,
-                trustee, {
+                trustee,
+                betExpirationDate, {
                     from: manager,
                 },
             )
@@ -231,7 +237,8 @@ describe('TrustBet', async () => {
                 betDescription,
                 betOptions,
                 betValue,
-                trustee, {
+                trustee,
+                betExpirationDate, {
                     from: manager,
                 },
             )
@@ -346,7 +353,8 @@ describe('TrustBet', async () => {
                 betDescription,
                 betOptions,
                 betValue,
-                trustee, {
+                trustee,
+                betExpirationDate, {
                     from: manager,
                 },
             )
@@ -417,7 +425,8 @@ describe('TrustBet', async () => {
                     betDescription,
                     betOptions,
                     betValue,
-                    trustee, {
+                    trustee,
+                    betExpirationDate, {
                         from: manager,
                     },
                 )

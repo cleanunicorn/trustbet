@@ -264,6 +264,23 @@ describe('TrustBet', async () => {
             )
         })
 
+        it('bettor is returned in bet details after accepting bet', async () => {
+            const acceptBetTx = await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+
+            const betDetailsCall = await this.TrustBet.betDetails.call(
+                betId,
+            )
+
+            expect(arrayEqual(betDetailsCall[9], [bettorA]), 'bettor address').to.be.equal(true)
+            expect(arrayEqual(betDetailsCall[10], [bettorAOptionIndex]), 'bettor selected option').to.be.equal(true)
+        })
+
         it('cannot accept non existent bet', async () => {
             await expectRevert(
                 this.TrustBet.acceptBet(

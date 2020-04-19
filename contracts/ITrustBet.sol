@@ -35,7 +35,11 @@ interface ITrustBet {
         // expirationDate
         uint,
         // status
-        BetStatus
+        BetStatus,
+        // bettors
+        address[] memory bettors,
+        // bettors' selected option
+        uint[] memory selectedOption
     );
 
     /**

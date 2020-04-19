@@ -39,6 +39,9 @@ contract TrustBet is ITrustBet {
         address[] bettorsArray;
         mapping(address => Bettor) bettors;
 
+        // Bettors selected option
+        uint[] selectedOptions;
+
         // Status
         BetStatus status;
     }
@@ -122,12 +125,21 @@ contract TrustBet is ITrustBet {
             // expirationDate
             uint,
             // status
-            BetStatus
+            BetStatus,
+            // bettors
+            address[] memory,
+            // bettors' selected option
+            uint[] memory
         )
     {
         require(betId <= _bets.length, "Bet does not exist");
 
-        Bet memory bet = _bets[betId];
+        Bet storage bet = _bets[betId];
+
+        uint[] memory selectedOption = new uint[](bet.bettorsArray.length);
+        for (uint i = 0; i < bet.bettorsArray.length; i++) {
+            selectedOption[i] = bet.bettors[bet.bettorsArray[i]].optionIndex;
+        }
 
         return (
             // betId
@@ -147,7 +159,11 @@ contract TrustBet is ITrustBet {
             // expirationDate
             bet.expirationDate,
             // status
-            bet.status
+            bet.status,
+            // bettors
+            bet.bettorsArray,
+            // bettors' selected option
+            selectedOption
         );
     }
 

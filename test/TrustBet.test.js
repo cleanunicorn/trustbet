@@ -265,7 +265,7 @@ describe('TrustBet', async () => {
         })
 
         it('bettor is returned in bet details after accepting bet', async () => {
-            const acceptBetTx = await this.TrustBet.acceptBet(
+            await this.TrustBet.acceptBet(
                 betId,
                 bettorAOptionIndex, {
                     from: bettorA,

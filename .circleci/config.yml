@@ -64,6 +64,8 @@ jobs:
       - run:
           name: Unit tests with coverage report
           command: npm run coverage
+      - store_artifacts:
+          path: coverage
 
 workflows:
   version: 2

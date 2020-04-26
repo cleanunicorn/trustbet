@@ -6,9 +6,29 @@ interface ITrustBet {
         @notice defines bet status
      */
     enum BetStatus {
+        // Initialized
+        // - The bet was created and it is waiting for Bettors to accept it.
+        // - Bettors can join the bet.
         Initialized,
+
+        // Started
+        // - No more bettors can join the bet.
+        // - Bettors can post results.
         Started,
+
+        // Closed
+        // - All bettors posted results.
+        // - There is full consensus on posted results, all bettors posted the identical result.
         Closed,
+
+        // Disputed
+        // - At least 2 or more bettors posted result.
+        // - There is at least 1 result which differs from the other results, there is no full consensus.
+        Disputed,
+
+        // Cancelled
+        // - Manager cancelled the bet while bet was still active
+        // - Bet expired and somebody cancelled the bet before bet got to `Closed` state
         Cancelled
     }
 
@@ -79,16 +99,18 @@ interface ITrustBet {
         uint betId
     );
 
-    // event BetClosed(
-    //     uint betId,
-    //     uint winningOptionIndex
-    // );
-
     function startBet(uint betId) external;
 
-    function closeBet(uint betId) external;
+    event BetClosed(
+        uint betId,
+        uint winningOptionIndex
+    );
 
-    // // Bettor actions
+    event BetDisputed(
+        uint betId
+    );
+
+    // Bettor actions
 
     event BetAccepted(
         uint betId,

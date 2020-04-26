@@ -198,11 +198,11 @@ contract TrustBet is ITrustBet {
 
     /**
         @notice Start the bet after all Bettors joined. No additional Bettors can join the bet after it started.
-        @dev Only the creator of the bet can start it
+        @dev Only the Manager of the bet can start it
         @param betId The id of the bet that should start
      */
     function startBet(uint betId)
-        public
+        external
         override(ITrustBet)
     {
         Bet storage bet = _bets[betId];
@@ -227,7 +227,7 @@ contract TrustBet is ITrustBet {
         uint betId,
         uint selectedOptionIndex
     )
-        public
+        external
         payable
         override(ITrustBet)
     {
@@ -240,13 +240,14 @@ contract TrustBet is ITrustBet {
         require(msg.value == bet.value, "Sent value does not match bet value");
         require(bet.bettors[msg.sender].exists == false, "Cannot accept the same bet twice");
 
-        // Add bettor
+        // Create bettor structure
         Bettor storage bettor = bet.bettors[msg.sender];
         bettor.exists = true;
         bettor.selectedOptionIndex = selectedOptionIndex;
         // This starts as -1 to reflect that no result index was posted
         bettor.resultOptionIndex = -1;
 
+        // Add bettor
         bet.bettorsArray.push(msg.sender);
 
         emit BetAccepted({
@@ -266,7 +267,7 @@ contract TrustBet is ITrustBet {
         uint betId,
         uint resultOptionIndex
     )
-        public
+        external
         override(ITrustBet)
     {
         require(betId <= _bets.length, "Bet does not exist");
@@ -285,22 +286,56 @@ contract TrustBet is ITrustBet {
             betId,
             resultOptionIndex
         );
+
+        // Check if all Bettors posted results and if all of them match
+        bool allBettors = true;
+        bool resultsConflict = false;
+        for (uint i = 0; i < bet.bettorsArray.length; i++) {
+            Bettor storage bettorIter = bet.bettors[bet.bettorsArray[i]];
+
+            // If not all bettors posted results
+            if (bettorIter.resultOptionIndex == -1) {
+                allBettors = false;
+            } else {
+                // If there is a result different from the current result,
+                // the bet moves into a `Disputed` state
+                if (int(resultOptionIndex) != bettorIter.resultOptionIndex) {
+                    resultsConflict = true;
+                }
+            }
+        }
+
+        // If all bettors posted result and there are no conflicts, move the bet into
+        // the Closed state. We have consensus, winners can start withdrawing their funds
+        if (allBettors && !resultsConflict) {
+            bet.status = BetStatus.Closed;
+            emit BetClosed(
+                betId,
+                resultOptionIndex
+            );
+        } else {
+            // If at least one of the results is different, move the bet into
+            // the Disputed state. We do not have consensus, the Trustee needs to intervene.
+            if (resultsConflict) {
+                bet.status = BetStatus.Disputed;
+                emit BetDisputed(
+                    betId
+                );
+            }
+        }
     }
 
     /**
-        @notice The Manager can close the bet after which no additional
-        Bettors can join the bet.
+        @notice Change bet status to Closed
         @param betId the id of the bet to be closed
      */
     function closeBet(
         uint betId
     )
-        public
-        override(ITrustBet)
+        private
     {
-        Bet storage bet = _bets[betId];
-
-        require(msg.sender == bet.manager, "Only the manager can close the bet");
+        // TODO
+        // Bet storage bet = _bets[betId];
+        // require(bet.status == )
     }
-
 }

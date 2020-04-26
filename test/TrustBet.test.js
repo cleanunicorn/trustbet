@@ -18,11 +18,13 @@ const betValue = new BN('10')
 const betExpirationDate = new BN(new Date().getTime() + 86400)
 
 // Bet status
-const BET_STATUS_INITIALIZED = new BN('0')
-const BET_STATUS_STARTED = new BN('1')
-const BET_STATUS_CLOSED = new BN('2')
-const BET_STATUS_DISPUTED = new BN('3')
-// const BET_STATUS_CANCELLED = new BN('4')
+const BET_STATUS = {
+    INITIALIZED: new BN('0'),
+    STARTED: new BN('1'),
+    CLOSED: new BN('2'),
+    DISPUTED: new BN('3'),
+    CANCELLED: new BN('4'),
+}
 
 // Array equality
 const arrayEqual = (a, b) => {
@@ -68,7 +70,7 @@ contract('TrustBet', ([
             expectEvent(
                 createBetTx,
                 'CreatedBet', {
-                    betId: new BN('0'),
+                    betId: betId,
                     name: betName,
                     description: betDescription,
                     // Array equality is broken in JavaScript, the check is done below
@@ -106,15 +108,15 @@ contract('TrustBet', ([
                 betId,
             )
 
-            expect(betDetailsCall[0], 'match betId').to.be.bignumber.equal(betId)
+            expect(betDetailsCall[0].eq(betId), 'match betId').to.be.true
             expect(betDetailsCall[1], 'match name').to.be.equal(betName)
             expect(betDetailsCall[2], 'match description').to.be.equal(betDescription)
-            expect(arrayEqual(betDetailsCall[3], betOptions), 'match options').to.be.equal(true)
-            expect(betDetailsCall[4], 'match value').to.be.bignumber.equal(betValue)
+            expect(arrayEqual(betDetailsCall[3], betOptions), 'match options').to.be.true
+            expect(betDetailsCall[4].eq(betValue), 'match value').to.be.true
             expect(betDetailsCall[5], 'match manager').to.be.equal(manager)
             expect(betDetailsCall[6], 'match trustee').to.be.equal(trustee)
-            expect(betDetailsCall[7], 'match expiration date').to.be.bignumber.equal(betExpirationDate)
-            expect(betDetailsCall[8], 'match status').to.be.bignumber.equal(BET_STATUS_INITIALIZED)
+            expect(betDetailsCall[7].eq(betExpirationDate), 'match expiration date').to.be.true
+            expect(betDetailsCall[8].eq(BET_STATUS.INITIALIZED), 'match status').to.be.true
         })
 
         it('fails if the bet does not exist', async () => {
@@ -155,7 +157,7 @@ contract('TrustBet', ([
                 bettorA,
             )
 
-            expect(betSelectedOptionCall, 'match selected option').to.be.bignumber.equal(bettorAOptionIndex)
+            expect(betSelectedOptionCall.eq(bettorAOptionIndex), 'match selected option').to.be.true
         })
 
         it('fails if the bet does not exist', async () => {
@@ -219,7 +221,7 @@ contract('TrustBet', ([
                 betId,
             )
 
-            expect(betDetailsCall[8], 'Started state').to.be.bignumber.equal(BET_STATUS_STARTED)
+            expect(betDetailsCall[8].eq(BET_STATUS.STARTED), 'Started state').to.be.true
         })
 
         it('nobody else can start bet', async () => {
@@ -570,7 +572,7 @@ contract('TrustBet', ([
                 betId,
             )
 
-            expect(betDetailsCall[8], 'bet closed').to.be.bignumber.equal(BET_STATUS_CLOSED)
+            expect(betDetailsCall[8].eq(BET_STATUS.CLOSED), 'bet closed').to.be.true
         })
 
         it('bet emits closed event when last bettor post same result', async () => {
@@ -616,7 +618,7 @@ contract('TrustBet', ([
                 betId,
             )
 
-            expect(betDetailsCall[8], 'bet disputed').to.be.bignumber.equal(BET_STATUS_DISPUTED)
+            expect(betDetailsCall[8].eq(BET_STATUS.DISPUTED), 'bet disputed').to.be.true
         })
 
         it('bet emits disputed event when bettor posts different result from existing ones', async () => {

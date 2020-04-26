@@ -4,7 +4,7 @@ const {
     expectRevert,
 } = require('@openzeppelin/test-helpers')
 
-const TrustBet = artifacts.require('TrustBet');
+const TrustBet = artifacts.require('TrustBet')
 
 // Bet definition
 const betName = 'The answer to life'

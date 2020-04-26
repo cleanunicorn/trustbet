@@ -108,15 +108,15 @@ contract('TrustBet', ([
                 betId,
             )
 
-            expect(betDetailsCall[0].eq(betId), 'match betId').to.be.true
+            expect(betDetailsCall[0].eq(betId), 'match betId').to.equal(true)
             expect(betDetailsCall[1], 'match name').to.be.equal(betName)
             expect(betDetailsCall[2], 'match description').to.be.equal(betDescription)
-            expect(arrayEqual(betDetailsCall[3], betOptions), 'match options').to.be.true
-            expect(betDetailsCall[4].eq(betValue), 'match value').to.be.true
+            expect(arrayEqual(betDetailsCall[3], betOptions), 'match options').to.equal(true)
+            expect(betDetailsCall[4].eq(betValue), 'match value').to.equal(true)
             expect(betDetailsCall[5], 'match manager').to.be.equal(manager)
             expect(betDetailsCall[6], 'match trustee').to.be.equal(trustee)
-            expect(betDetailsCall[7].eq(betExpirationDate), 'match expiration date').to.be.true
-            expect(betDetailsCall[8].eq(BET_STATUS.INITIALIZED), 'match status').to.be.true
+            expect(betDetailsCall[7].eq(betExpirationDate), 'match expiration date').to.equal(true)
+            expect(betDetailsCall[8].eq(BET_STATUS.INITIALIZED), 'match status').to.equal(true)
         })
 
         it('fails if the bet does not exist', async () => {
@@ -157,7 +157,7 @@ contract('TrustBet', ([
                 bettorA,
             )
 
-            expect(betSelectedOptionCall.eq(bettorAOptionIndex), 'match selected option').to.be.true
+            expect(betSelectedOptionCall.eq(bettorAOptionIndex), 'match selected option').to.equal(true)
         })
 
         it('fails if the bet does not exist', async () => {
@@ -221,7 +221,7 @@ contract('TrustBet', ([
                 betId,
             )
 
-            expect(betDetailsCall[8].eq(BET_STATUS.STARTED), 'Started state').to.be.true
+            expect(betDetailsCall[8].eq(BET_STATUS.STARTED), 'Started state').to.equal(true)
         })
 
         it('nobody else can start bet', async () => {
@@ -572,7 +572,7 @@ contract('TrustBet', ([
                 betId,
             )
 
-            expect(betDetailsCall[8].eq(BET_STATUS.CLOSED), 'bet closed').to.be.true
+            expect(betDetailsCall[8].eq(BET_STATUS.CLOSED), 'bet closed').to.equal(true)
         })
 
         it('bet emits closed event when last bettor post same result', async () => {
@@ -618,7 +618,7 @@ contract('TrustBet', ([
                 betId,
             )
 
-            expect(betDetailsCall[8].eq(BET_STATUS.DISPUTED), 'bet disputed').to.be.true
+            expect(betDetailsCall[8].eq(BET_STATUS.DISPUTED), 'bet disputed').to.equal(true)
         })
 
         it('bet emits disputed event when bettor posts different result from existing ones', async () => {

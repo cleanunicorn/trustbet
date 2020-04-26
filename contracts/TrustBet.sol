@@ -324,18 +324,4 @@ contract TrustBet is ITrustBet {
             }
         }
     }
-
-    /**
-        @notice Change bet status to Closed
-        @param betId the id of the bet to be closed
-     */
-    function closeBet(
-        uint betId
-    )
-        private
-    {
-        // TODO
-        // Bet storage bet = _bets[betId];
-        // require(bet.status == )
-    }
 }

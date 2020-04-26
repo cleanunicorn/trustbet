@@ -1,6 +1,5 @@
-var TrustBet = artifacts.require("TrustBet")
+const TrustBet = artifacts.require('TrustBet')
 
 module.exports = function (_deployer) {
-    _deployer.deploy(TrustBet);
-
-};
+    _deployer.deploy(TrustBet)
+}

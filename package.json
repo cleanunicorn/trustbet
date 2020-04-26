@@ -8,8 +8,8 @@
     "compile": "truffle compile",
     "lint": "npm run lint:js && npm run lint:sol",
     "lint:fix": "npm run lint:js:fix",
-    "lint:js": "eslint --ignore-path .gitignore .",
-    "lint:js:fix": "eslint --ignore-path .gitignore . --fix",
+    "lint:js": "eslint .",
+    "lint:js:fix": "eslint . --fix",
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "truffle test",
     "coverage": "truffle run coverage"

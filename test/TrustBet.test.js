@@ -245,6 +245,16 @@ describe('TrustBet', async () => {
         })
 
         it('bettor can accept bet', async () => {
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+        })
+
+        it('emits event when accepting bet', async () => {
             const acceptBetTx = await this.TrustBet.acceptBet(
                 betId,
                 bettorAOptionIndex, {
@@ -258,7 +268,7 @@ describe('TrustBet', async () => {
                 'BetAccepted', {
                     betId: betId,
                     bettor: bettorA,
-                    optionIndex: bettorAOptionIndex,
+                    selectedOptionIndex: bettorAOptionIndex,
                     value: betValue,
                 },
             )
@@ -498,22 +508,6 @@ describe('TrustBet', async () => {
                 ),
                 'Bettor is not part of the bet',
             )
-        })
-
-        it('can return post bet result', async () => {
-            await this.TrustBet.postBetResult(
-                betId,
-                realBetResult, {
-                    from: bettorA,
-                },
-            )
-
-            const betPostedResultTx = await this.TrustBet.betPostedResult.call(
-                betId,
-                bettorA,
-            )
-
-            expect(betPostedResultTx, 'match posted bet result').to.be.bignumber.equal(realBetResult)
         })
     })
 })

@@ -1,4 +1,4 @@
-pragma solidity >= 0.6.0;
+pragma solidity >= 0.6.4;
 pragma experimental ABIEncoderV2;
 
 interface ITrustBet {
@@ -38,8 +38,10 @@ interface ITrustBet {
         BetStatus,
         // bettors
         address[] memory bettors,
-        // bettors' selected option
-        uint[] memory selectedOption
+        // selected option index when bettor entered the bet
+        uint[] memory selectedOptionIndexes,
+        // reported option index by bettor as the result at the end of the bet
+        int[] memory resultOptionIndexes
     );
 
     /**
@@ -52,20 +54,6 @@ interface ITrustBet {
         // selectedOptionIndex
         uint
     );
-
-    function betPostedResult(
-        uint betId,
-        address bettor
-    ) external view returns(
-        // postedOptionIndex
-        uint
-    );
-
-    // function bettorOption(
-    //     uint betId,
-    //     address bettor,
-
-    // )
 
     // Manager actions
     event CreatedBet(
@@ -105,7 +93,7 @@ interface ITrustBet {
     event BetAccepted(
         uint betId,
         address bettor,
-        uint optionIndex,
+        uint selectedOptionIndex,
         uint value
     );
 

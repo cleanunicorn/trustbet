@@ -24,7 +24,7 @@ jobs:
             if [ ! -d node_modules ]; then
               npm ci
             else
-              npm run prepare
+              rm -rf ./build
             fi
       - persist_to_workspace:
           root: .
@@ -64,8 +64,8 @@ jobs:
       - run:
           name: Unit tests with coverage report
           command: npm run coverage
-
-      # TODO(xinbenlv, #1839): run SOLC_NIGHTLY to be run but allow it to fail.
+      - store_artifacts:
+          path: coverage
 
 workflows:
   version: 2

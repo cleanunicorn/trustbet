@@ -8,15 +8,13 @@ import "./ITrustBet.sol";
     @title A contract that intermediates a way for friends to create bets
  */
 contract TrustBet is ITrustBet {
-    struct PostedResult {
-        uint postedOptionIndex;
-        bool exists;
-    }
-
     struct Bettor {
-        uint optionIndex;
+        // This is true for all bettors that accepted the bet
         bool exists;
-        PostedResult result;
+        // Index of the selected option when accepting the bet
+        uint selectedOptionIndex;
+        // Index of the option which is reported as the result of the bet
+        int resultOptionIndex;
     }
 
     struct Bet {
@@ -38,9 +36,6 @@ contract TrustBet is ITrustBet {
         // Bettors
         address[] bettorsArray;
         mapping(address => Bettor) bettors;
-
-        // Bettors selected option
-        uint[] selectedOptions;
 
         // Status
         BetStatus status;
@@ -128,18 +123,24 @@ contract TrustBet is ITrustBet {
             BetStatus,
             // bettors
             address[] memory,
-            // bettors' selected option
-            uint[] memory
+            // selected option index when bettor entered the bet
+            uint[] memory,
+            // reported option index by bettor as the result at the end of the bet
+            int[] memory
         )
     {
         require(betId <= _bets.length, "Bet does not exist");
 
         Bet storage bet = _bets[betId];
 
+        // Gather selected option for each bettor
         uint[] memory selectedOption = new uint[](bet.bettorsArray.length);
         for (uint i = 0; i < bet.bettorsArray.length; i++) {
-            selectedOption[i] = bet.bettors[bet.bettorsArray[i]].optionIndex;
+            selectedOption[i] = bet.bettors[bet.bettorsArray[i]].selectedOptionIndex;
         }
+
+        // Gather posted result for each bettor
+        int[] memory postedResult = new int[](bet.bettorsArray.length);
 
         return (
             // betId
@@ -163,7 +164,9 @@ contract TrustBet is ITrustBet {
             // bettors
             bet.bettorsArray,
             // bettors' selected option
-            selectedOption
+            selectedOption,
+            // bettors' posted result
+            postedResult
         );
     }
 
@@ -190,44 +193,16 @@ contract TrustBet is ITrustBet {
 
         require(_bets[betId].bettors[bettor].exists, "Bettor did not accept bet");
 
-        return (_bets[betId].bettors[bettor].optionIndex);
+        return (_bets[betId].bettors[bettor].selectedOptionIndex);
     }
-
-    /**
-        @notice Return index of posted result bet option by the bettor
-        @dev Fails
-        - if the bet does not exist
-        - if the bettor did not post any option
-        @param betId the id of the bet
-        @param bettor the address of the bettor
-        @return index of the posted option by the bettor
-     */
-    function betPostedResult(
-        uint betId,
-        address bettor
-    )
-        external
-        view
-        override(ITrustBet)
-        returns(
-            //postedOptionIndex
-            uint
-        )
-    {
-        // TODO: check bet exists
-        // TODO: check bettor posted
-
-        return _bets[betId].bettors[bettor].result.postedOptionIndex;
-    }
-
 
     /**
         @notice Start the bet after all Bettors joined. No additional Bettors can join the bet after it started.
-        @dev Only the creator of the bet can start it
+        @dev Only the Manager of the bet can start it
         @param betId The id of the bet that should start
      */
     function startBet(uint betId)
-        public
+        external
         override(ITrustBet)
     {
         Bet storage bet = _bets[betId];
@@ -246,13 +221,13 @@ contract TrustBet is ITrustBet {
     /**
         @notice The Bettor can accept a bet and also has to send the funds.
         @param betId the id of the bet to be accepted
-        @param optionIndex the option picked by the Bettor
+        @param selectedOptionIndex the option picked by the Bettor
      */
     function acceptBet(
         uint betId,
-        uint optionIndex
+        uint selectedOptionIndex
     )
-        public
+        external
         payable
         override(ITrustBet)
     {
@@ -261,24 +236,24 @@ contract TrustBet is ITrustBet {
         Bet storage bet = _bets[betId];
 
         require(bet.status == BetStatus.Initialized, "Can only accept when bet is initialized");
-
-        require(optionIndex <= bet.options.length, "Option does not exist");
-
+        require(selectedOptionIndex <= bet.options.length, "Option does not exist");
         require(msg.value == bet.value, "Sent value does not match bet value");
-
         require(bet.bettors[msg.sender].exists == false, "Cannot accept the same bet twice");
 
-        // Add bettor
+        // Create bettor structure
         Bettor storage bettor = bet.bettors[msg.sender];
         bettor.exists = true;
-        bettor.optionIndex = optionIndex;
+        bettor.selectedOptionIndex = selectedOptionIndex;
+        // This starts as -1 to reflect that no result index was posted
+        bettor.resultOptionIndex = -1;
 
+        // Add bettor
         bet.bettorsArray.push(msg.sender);
 
         emit BetAccepted({
             betId: betId,
             bettor: msg.sender,
-            optionIndex: optionIndex,
+            selectedOptionIndex: selectedOptionIndex,
             value: msg.value
         });
     }
@@ -286,13 +261,13 @@ contract TrustBet is ITrustBet {
     /**
         @notice Bettor should post the real outcome of the bet.
         @param betId the id of the bet
-        @param optionIndex the real outcome of the bet identified by the index
+        @param resultOptionIndex the real outcome of the bet identified by the index
      */
     function postBetResult(
         uint betId,
-        uint optionIndex
+        uint resultOptionIndex
     )
-        public
+        external
         override(ITrustBet)
     {
         require(betId <= _bets.length, "Bet does not exist");
@@ -300,40 +275,67 @@ contract TrustBet is ITrustBet {
         Bet storage bet = _bets[betId];
 
         require(bet.status == BetStatus.Started, "Can only post result when bet is started");
-
-        require(optionIndex <= bet.options.length, "Option does not exist");
-
+        require(resultOptionIndex <= bet.options.length, "Option does not exist");
         require(bet.bettors[msg.sender].exists, "Bettor is not part of the bet");
-
-        require(bet.bettors[msg.sender].result.exists == false, "Bettor already posted result");
-
-        PostedResult memory postedResult;
-        postedResult.exists = true;
-        postedResult.postedOptionIndex = optionIndex;
+        require(bet.bettors[msg.sender].resultOptionIndex == -1, "Bettor already posted result");
 
         Bettor storage bettor = bet.bettors[msg.sender];
-        bettor.result = postedResult;
+        bettor.resultOptionIndex = int(resultOptionIndex);
 
         emit BetResultPosted(
             betId,
-            optionIndex
+            resultOptionIndex
         );
+
+        // Check if all Bettors posted results and if all of them match
+        bool allBettors = true;
+        bool resultsConflict = false;
+        for (uint i = 0; i < bet.bettorsArray.length; i++) {
+            Bettor storage bettorIter = bet.bettors[bet.bettorsArray[i]];
+
+            // If not all bettors posted results
+            if (bettorIter.resultOptionIndex == -1) {
+                allBettors = false;
+            } else {
+                // If there is a result different from the current result,
+                // the bet moves into a `Disputed` state
+                if (int(resultOptionIndex) != bettorIter.resultOptionIndex) {
+                    resultsConflict = true;
+                }
+            }
+        }
+
+        // If all bettors posted result and there are no conflicts, move the bet into
+        // the Closed state. We have consensus, winners can start withdrawing their funds
+        if (allBettors && !resultsConflict) {
+            bet.status = BetStatus.Closed;
+            emit BetClosed(
+                betId,
+                resultOptionIndex
+            );
+        } else {
+            // If at least one of the results is different, move the bet into
+            // the Disputed state. We do not have consensus, the Trustee needs to intervene.
+            if (resultsConflict) {
+                bet.status = BetStatus.Disputed;
+                emit BetDisputed(
+                    betId
+                );
+            }
+        }
     }
 
     /**
-        @notice The Manager can close the bet after which no additional
-        Bettors can join the bet.
+        @notice Change bet status to Closed
         @param betId the id of the bet to be closed
      */
     function closeBet(
         uint betId
     )
-        public
-        override(ITrustBet)
+        private
     {
-        Bet storage bet = _bets[betId];
-
-        require(msg.sender == bet.manager, "Only the manager can close the bet");
+        // TODO
+        // Bet storage bet = _bets[betId];
+        // require(bet.status == )
     }
-
 }

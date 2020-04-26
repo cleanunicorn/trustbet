@@ -1,19 +1,10 @@
 const {
-    accounts,
-    contract,
-} = require('@openzeppelin/test-environment')
-
-const {
-    expect,
-} = require('chai')
-
-const {
     BN,
     expectEvent,
     expectRevert,
 } = require('@openzeppelin/test-helpers')
 
-const TrustBet = contract.fromArtifact('TrustBet')
+const TrustBet = artifacts.require('TrustBet');
 
 // Bet definition
 const betName = 'The answer to life'
@@ -33,21 +24,18 @@ const BET_STATUS_CLOSED = new BN('2')
 const BET_STATUS_DISPUTED = new BN('3')
 // const BET_STATUS_CANCELLED = new BN('4')
 
-// Actors
-const [
-    manager,
-    trustee,
-    bettorA,
-    bettorB,
-    otherAccount,
-] = accounts
-
 // Array equality
 const arrayEqual = (a, b) => {
     return !!a && !!b && !(a < b || b < a)
 }
 
-describe('TrustBet', async () => {
+contract('TrustBet', ([
+    manager,
+    trustee,
+    bettorA,
+    bettorB,
+    otherAccount,
+]) => {
     const betId = new BN('0')
     const bettorAOptionIndex = new BN('0')
     const bettorBOptionIndex = new BN('1')
@@ -615,7 +603,7 @@ describe('TrustBet', async () => {
                 realBetResult, {
                     from: bettorA,
                 },
-            );
+            )
 
             await this.TrustBet.postBetResult(
                 betId,
@@ -637,7 +625,7 @@ describe('TrustBet', async () => {
                 realBetResult, {
                     from: bettorA,
                 },
-            );
+            )
 
             const postBetResultTx = await this.TrustBet.postBetResult(
                 betId,
@@ -649,10 +637,9 @@ describe('TrustBet', async () => {
             expectEvent(
                 postBetResultTx,
                 'BetDisputed', {
-                    betId: betId
-                }
+                    betId: betId,
+                },
             )
-
         })
     })
 })

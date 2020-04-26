@@ -4,16 +4,15 @@
   "description": "Create bets with your friends.",
   "main": "index.js",
   "scripts": {
-    "build": "./scripts/compile.sh",
-    "compile": "npm run build",
-    "coverage": "scripts/coverage.sh",
+    "build": "npm run compile",
+    "compile": "truffle compile",
     "lint": "npm run lint:js && npm run lint:sol",
     "lint:fix": "npm run lint:js:fix",
     "lint:js": "eslint --ignore-path .gitignore .",
     "lint:js:fix": "eslint --ignore-path .gitignore . --fix",
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
-    "test": "npm run build && mocha --exit --recursive test",
-    "prepare": "node scripts/prepare.js"
+    "test": "truffle test",
+    "coverage": "truffle run coverage"
   },
   "repository": {
     "type": "git",
@@ -51,10 +50,13 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "eth-gas-reporter": "^0.2.17",
     "husky": "^4.2.5",
     "micromatch": "^4.0.2",
     "mocha": "^7.1.2",
     "solhint": "^2.3.1",
+    "solidity-coverage": "^0.7.4",
+    "truffle": "^5.1.23",
     "web3": "^1.2.7"
   },
   "dependencies": {}

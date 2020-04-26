@@ -65,8 +65,6 @@ jobs:
           name: Unit tests with coverage report
           command: npm run coverage
 
-      # TODO(xinbenlv, #1839): run SOLC_NIGHTLY to be run but allow it to fail.
-
 workflows:
   version: 2
   everything:

@@ -131,6 +131,10 @@ interface ITrustBet {
         uint optionIndex
     ) external;
 
+    function withdrawWinnings(
+        uint betId
+    ) external;
+
     // collectWinningBet
 
     // // Trustee actions

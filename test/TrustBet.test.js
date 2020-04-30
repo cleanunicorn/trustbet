@@ -2,6 +2,8 @@ const {
     BN,
     expectEvent,
     expectRevert,
+    balance,
+    ether,
 } = require('@openzeppelin/test-helpers')
 
 const TrustBet = artifacts.require('TrustBet')
@@ -14,7 +16,7 @@ const betOptions = [
     '42',
     'Fame',
 ]
-const betValue = new BN('10')
+const betValue = ether('1')
 const betExpirationDate = new BN(new Date().getTime() + 86400)
 
 // Bet status
@@ -641,6 +643,126 @@ contract('TrustBet', ([
                 'BetDisputed', {
                     betId: betId,
                 },
+            )
+        })
+    })
+
+    context('withdraw winnings', async () => {
+        beforeEach(async () => {
+            await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee,
+                betExpirationDate, {
+                    from: manager,
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                    value: betValue,
+                },
+            )
+
+            await this.TrustBet.startBet(
+                betId, {
+                    from: manager,
+                },
+            )
+
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorA,
+                },
+            )
+
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                },
+            )
+        })
+
+        it('bettor can withdraw winnings', async () => {
+            const bettorBBalanceTracker = await balance.tracker(bettorB)
+
+            const bettorBInitialBalance = await bettorBBalanceTracker.get()
+
+            const bettorBWithdrawWinningsTx = await this.TrustBet.withdrawWinnings(
+                betId,
+                {
+                    from: bettorB,
+                    gasPrice: 1,
+                },
+            )
+
+            const bettorBFinalBalance = await bettorBBalanceTracker.get()
+
+            expect(
+                bettorBFinalBalance.eq(bettorBInitialBalance
+                    // Add bet value
+                    .add(betValue.mul(new BN('2')))
+                    // Remove tx fee
+                    .sub(new BN(bettorBWithdrawWinningsTx.receipt.gasUsed)),
+                ),
+                'bettor balance change matches total bet value, minus tx fee',
+            ).to.equal(true)
+        })
+
+        it('bettor cannot withdraw winnings twice', async () => {
+            await this.TrustBet.withdrawWinnings(
+                betId,
+                {
+                    from: bettorB,
+                },
+            )
+
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    betId,
+                    {
+                        from: bettorB,
+                    },
+                ),
+                'Bettor already withdrew winnings',
+            )
+        })
+
+        it('other bettors cannot withdraw undeserved winnings', async () => {
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    betId,
+                    {
+                        from: bettorA,
+                    },
+                ),
+                'Bettor is not a winner',
+            )
+        })
+
+        it('other accounts cannot withdraw winnings', async () => {
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    betId,
+                    {
+                        from: otherAccount,
+                    },
+                ),
+                'Account is not a bettor',
             )
         })
     })

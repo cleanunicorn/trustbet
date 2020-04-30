@@ -305,23 +305,24 @@ contract TrustBet is ITrustBet {
             }
         }
 
+        // If at least one of the results is different, move the bet into
+        // the Disputed state. We do not have consensus, the Trustee needs to intervene.
+        if (resultsConflict) {
+            bet.status = BetStatus.Disputed;
+            emit BetDisputed(
+                betId
+            );
+            return;
+        }
+
         // If all bettors posted result and there are no conflicts, move the bet into
         // the Closed state. We have consensus, winners can start withdrawing their funds
-        if (allBettors && !resultsConflict) {
+        if (allBettors) {
             bet.status = BetStatus.Closed;
             emit BetClosed(
                 betId,
                 resultOptionIndex
             );
-        } else {
-            // If at least one of the results is different, move the bet into
-            // the Disputed state. We do not have consensus, the Trustee needs to intervene.
-            if (resultsConflict) {
-                bet.status = BetStatus.Disputed;
-                emit BetDisputed(
-                    betId
-                );
-            }
         }
     }
 }

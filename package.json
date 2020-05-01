@@ -58,5 +58,7 @@
     "truffle": "^5.1.23",
     "web3": "^1.2.7"
   },
-  "dependencies": {}
+  "dependencies": {
+    "solidity-docgen": "^0.5.3"
+  }
 }

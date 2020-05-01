@@ -207,7 +207,7 @@ contract TrustBet is ITrustBet {
     {
         Bet storage bet = _bets[betId];
 
-        require(bet.status == BetStatus.Initialized, "Bet was already initialized before");
+        require(bet.status == BetStatus.Initialized, "Can only start when bet is initialized");
 
         require(bet.manager == msg.sender, "Only the manager can start the bet");
 

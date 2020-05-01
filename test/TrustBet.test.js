@@ -210,6 +210,22 @@ contract('TrustBet', ([
             )
         })
 
+        it('cannot start bet twice', async () => {
+            await this.TrustBet.startBet(
+                betId, {
+                    from: manager,
+                },
+            )
+
+            await expectRevert(
+                this.TrustBet.startBet(
+                    betId, {
+                        from: manager,
+                    },
+                ), 'Can only start when bet is initialized',
+            )
+        })
+
         it('changes bet status to Started', async () => {
             await this.TrustBet.startBet(
                 betId, {

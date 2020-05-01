@@ -321,10 +321,7 @@ contract TrustBet is ITrustBet {
 
         Bet storage bet = _bets[betId];
 
-        // bet must be closed
         require(bet.status == BetStatus.Closed, "Bet is not closed");
-        // bettor must exist in the bet
-        // bettor must be winner
 
         Bettor storage bettor = bet.bettors[msg.sender];
 
@@ -334,6 +331,14 @@ contract TrustBet is ITrustBet {
 
         bettor.withdrewWinnings = true;
 
-        msg.sender.transfer(bet.value * bet.bettorsArray.length);
+        // Count winners
+        uint winnerCount = 0;
+        for (uint i = 0; i < bet.bettorsArray.length; i++) {
+            if (bet.bettors[bet.bettorsArray[i]].selectedOptionIndex == uint(bet.finalResultOptionIndex)) {
+                winnerCount++;
+            }
+        }
+
+        msg.sender.transfer(bet.value * bet.bettorsArray.length / winnerCount);
     }
 }

@@ -787,8 +787,8 @@ contract('TrustBet', ([
                 // Start bet
                 await this.TrustBet.startBet(
                     multipleBettorsBetId, {
-                        from: manager
-                    }
+                        from: manager,
+                    },
                 )
 
                 // Post result
@@ -839,7 +839,7 @@ contract('TrustBet', ([
                 expect(
                     bettorBFinalBalance,
                     'bettor balance change matches winnings, minus tx fee',
-                ).to.eql(expectedFinalBalance);
+                ).to.eql(expectedFinalBalance)
             })
         })
     })

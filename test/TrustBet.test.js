@@ -2,6 +2,8 @@ const {
     BN,
     expectEvent,
     expectRevert,
+    balance,
+    ether,
 } = require('@openzeppelin/test-helpers')
 
 const TrustBet = artifacts.require('TrustBet')
@@ -14,7 +16,7 @@ const betOptions = [
     '42',
     'Fame',
 ]
-const betValue = new BN('10')
+const betValue = ether('1')
 const betExpirationDate = new BN(new Date().getTime() + 86400)
 
 // Bet status
@@ -36,6 +38,7 @@ contract('TrustBet', ([
     trustee,
     bettorA,
     bettorB,
+    bettorC,
     otherAccount,
 ]) => {
     const betId = new BN('0')
@@ -125,58 +128,6 @@ contract('TrustBet', ([
                     nonExistentBetId,
                 ),
                 'Bet does not exist',
-            )
-        })
-    })
-
-    context('bet options', async () => {
-        beforeEach(async () => {
-            await this.TrustBet.createBet(
-                betName,
-                betDescription,
-                betOptions,
-                betValue,
-                trustee,
-                betExpirationDate, {
-                    from: manager,
-                },
-            )
-        })
-
-        it('returns selected bet option', async () => {
-            await this.TrustBet.acceptBet(
-                betId,
-                bettorAOptionIndex, {
-                    from: bettorA,
-                    value: betValue,
-                },
-            )
-
-            const betSelectedOptionCall = await this.TrustBet.betSelectedOption.call(
-                betId,
-                bettorA,
-            )
-
-            expect(betSelectedOptionCall.eq(bettorAOptionIndex), 'match selected option').to.equal(true)
-        })
-
-        it('fails if the bet does not exist', async () => {
-            await expectRevert(
-                this.TrustBet.betSelectedOption.call(
-                    nonExistentBetId,
-                    bettorA,
-                ),
-                'Bet does not exist',
-            )
-        })
-
-        it('fails if the bettor did not accept bet', async () => {
-            await expectRevert(
-                this.TrustBet.betSelectedOption.call(
-                    betId,
-                    bettorA,
-                ),
-                'Bettor did not accept bet',
             )
         })
     })
@@ -658,6 +609,254 @@ contract('TrustBet', ([
                     betId: betId,
                 },
             )
+        })
+    })
+
+    context('withdraw winnings', async () => {
+        beforeEach(async () => {
+            await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee,
+                betExpirationDate, {
+                    from: manager,
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                    value: betValue,
+                },
+            )
+
+            await this.TrustBet.startBet(
+                betId, {
+                    from: manager,
+                },
+            )
+
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorA,
+                },
+            )
+
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                },
+            )
+        })
+
+        it('bettor can withdraw winnings', async () => {
+            const bettorBBalanceTracker = await balance.tracker(bettorB)
+            const bettorBInitialBalance = await bettorBBalanceTracker.get()
+            const bettorBWithdrawWinningsTx = await this.TrustBet.withdrawWinnings(
+                betId, {
+                    from: bettorB,
+                    gasPrice: 1,
+                },
+            )
+
+            const bettorBFinalBalance = await bettorBBalanceTracker.get()
+
+            expect(
+                bettorBFinalBalance.eq(bettorBInitialBalance
+                    // Add bet value
+                    .add(betValue.mul(new BN('2')))
+                    // Remove tx fee
+                    .sub(new BN(bettorBWithdrawWinningsTx.receipt.gasUsed)),
+                ),
+                'bettor balance change matches total bet value, minus tx fee',
+            ).to.equal(true)
+        })
+
+        it('bettor cannot withdraw winnings twice', async () => {
+            await this.TrustBet.withdrawWinnings(
+                betId, {
+                    from: bettorB,
+                },
+            )
+
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    betId, {
+                        from: bettorB,
+                    },
+                ),
+                'Bettor already withdrew winnings',
+            )
+        })
+
+        it('other bettors cannot withdraw undeserved winnings', async () => {
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    betId, {
+                        from: bettorA,
+                    },
+                ),
+                'Bettor is not a winner',
+            )
+        })
+
+        it('other accounts cannot withdraw winnings', async () => {
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    betId, {
+                        from: otherAccount,
+                    },
+                ),
+                'Account is not a bettor',
+            )
+        })
+
+        it('bet must exist', async () => {
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    nonExistentBetId, {
+                        from: otherAccount,
+                    },
+                ),
+                'Bet does not exist',
+            )
+        })
+
+        it('bet must be closed', async () => {
+            const createBetTx = await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee,
+                betExpirationDate, {
+                    from: manager,
+                },
+            )
+            const createdBetId = createBetTx.logs[0].args.betId
+
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    createdBetId, {
+                        from: otherAccount,
+                    },
+                ),
+                'Bet is not closed',
+            )
+        })
+
+        context('multiple bettors pick same option', async () => {
+            let multipleBettorsBetId
+
+            beforeEach(async () => {
+                // Create bet
+                const createBetTx = await this.TrustBet.createBet(
+                    betName,
+                    betDescription,
+                    betOptions,
+                    betValue,
+                    trustee,
+                    betExpirationDate, {
+                        from: manager,
+                    },
+                )
+                multipleBettorsBetId = createBetTx.logs[0].args.betId
+
+                // Accept bet
+                await this.TrustBet.acceptBet(
+                    multipleBettorsBetId,
+                    bettorAOptionIndex, {
+                        from: bettorA,
+                        value: betValue,
+                    },
+                )
+
+                await this.TrustBet.acceptBet(
+                    multipleBettorsBetId,
+                    bettorBOptionIndex, {
+                        from: bettorB,
+                        value: betValue,
+                    },
+                )
+
+                await this.TrustBet.acceptBet(
+                    multipleBettorsBetId,
+                    bettorBOptionIndex, {
+                        from: bettorC,
+                        value: betValue,
+                    },
+                )
+
+                // Start bet
+                await this.TrustBet.startBet(
+                    multipleBettorsBetId, {
+                        from: manager,
+                    },
+                )
+
+                // Post result
+                await this.TrustBet.postBetResult(
+                    multipleBettorsBetId,
+                    bettorBOptionIndex, {
+                        from: bettorA,
+                    },
+                )
+
+                await this.TrustBet.postBetResult(
+                    multipleBettorsBetId,
+                    bettorBOptionIndex, {
+                        from: bettorB,
+                    },
+                )
+
+                await this.TrustBet.postBetResult(
+                    multipleBettorsBetId,
+                    bettorBOptionIndex, {
+                        from: bettorC,
+                    },
+                )
+            })
+
+            it('splits winning funds between winners', async () => {
+                const bettorBBalanceTracker = await balance.tracker(bettorB)
+                const bettorBInitialBalance = await bettorBBalanceTracker.get()
+                const bettorBWithdrawWinningsTx = await this.TrustBet.withdrawWinnings(
+                    multipleBettorsBetId, {
+                        from: bettorB,
+                        gasPrice: 1,
+                    },
+                )
+
+                const bettorBFinalBalance = await bettorBBalanceTracker.get()
+
+                const txFee = new BN(bettorBWithdrawWinningsTx.receipt.gasUsed)
+                const expectedWinning = betValue
+                    // 3 bettors
+                    .mul(new BN('3'))
+                    // 2 winners
+                    .div(new BN('2'))
+                const expectedFinalBalance = bettorBInitialBalance
+                    .sub(txFee)
+                    .add(expectedWinning)
+
+                expect(
+                    bettorBFinalBalance,
+                    'bettor balance change matches winnings, minus tx fee',
+                ).to.eql(expectedFinalBalance)
+            })
         })
     })
 })

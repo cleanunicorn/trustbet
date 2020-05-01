@@ -15,6 +15,8 @@ contract TrustBet is ITrustBet {
         uint selectedOptionIndex;
         // Index of the option which is reported as the result of the bet
         int resultOptionIndex;
+        // Bettor collected winnings
+        bool withdrewWinnings;
     }
 
     struct Bet {
@@ -36,6 +38,9 @@ contract TrustBet is ITrustBet {
         // Bettors
         address[] bettorsArray;
         mapping(address => Bettor) bettors;
+
+        // Final result option obtained by all Bettors posting the same result or the trustee forcing the result
+        int finalResultOptionIndex;
 
         // Status
         BetStatus status;
@@ -74,6 +79,7 @@ contract TrustBet is ITrustBet {
         bet.manager = msg.sender;
         bet.expirationDate = expirationDate;
         bet.status = BetStatus.Initialized;
+        bet.finalResultOptionIndex = -1;
 
         _bets.push(bet);
 
@@ -139,8 +145,8 @@ contract TrustBet is ITrustBet {
             selectedOption[i] = bet.bettors[bet.bettorsArray[i]].selectedOptionIndex;
         }
 
-        // Gather posted result for each bettor
-        int[] memory postedResult = new int[](bet.bettorsArray.length);
+        // TODO: Gather posted result for each bettor
+        int[] memory postedResults = new int[](bet.bettorsArray.length);
 
         return (
             // betId
@@ -166,34 +172,8 @@ contract TrustBet is ITrustBet {
             // bettors' selected option
             selectedOption,
             // bettors' posted result
-            postedResult
+            postedResults
         );
-    }
-
-    /**
-        @notice Return index of selected bet option by the bettor
-        @dev Fails if the bet does not exist or if the bettor did not select any option
-        @param betId the id of the bet
-        @param bettor the address of the bettor
-        @return index of selected option by the bettor
-     */
-    function betSelectedOption(
-        uint betId,
-        address bettor
-    )
-        external
-        view
-        override(ITrustBet)
-        returns(
-            // selectedOptionIndex
-            uint
-        )
-    {
-        require(betId <= _bets.length, "Bet does not exist");
-
-        require(_bets[betId].bettors[bettor].exists, "Bettor did not accept bet");
-
-        return (_bets[betId].bettors[bettor].selectedOptionIndex);
     }
 
     /**
@@ -319,10 +299,46 @@ contract TrustBet is ITrustBet {
         // the Closed state. We have consensus, winners can start withdrawing their funds
         if (allBettors) {
             bet.status = BetStatus.Closed;
+            bet.finalResultOptionIndex = int(resultOptionIndex);
             emit BetClosed(
                 betId,
                 resultOptionIndex
             );
         }
+    }
+
+    /**
+        @notice Bettor can withdraw winnings if they won the bet
+        @param betId the id of the bet
+     */
+    function withdrawWinnings(
+        uint betId
+    )
+        external
+        override(ITrustBet)
+    {
+        require(betId <= _bets.length, "Bet does not exist");
+
+        Bet storage bet = _bets[betId];
+
+        require(bet.status == BetStatus.Closed, "Bet is not closed");
+
+        Bettor storage bettor = bet.bettors[msg.sender];
+
+        require(bettor.exists, "Account is not a bettor");
+        require(bettor.withdrewWinnings == false, "Bettor already withdrew winnings");
+        require(bettor.selectedOptionIndex == uint(bet.finalResultOptionIndex), "Bettor is not a winner");
+
+        bettor.withdrewWinnings = true;
+
+        // Count winners
+        uint winnerCount = 0;
+        for (uint i = 0; i < bet.bettorsArray.length; i++) {
+            if (bet.bettors[bet.bettorsArray[i]].selectedOptionIndex == uint(bet.finalResultOptionIndex)) {
+                winnerCount++;
+            }
+        }
+
+        msg.sender.transfer(bet.value * bet.bettorsArray.length / winnerCount);
     }
 }

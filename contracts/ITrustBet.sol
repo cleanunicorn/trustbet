@@ -64,17 +64,6 @@ interface ITrustBet {
         int[] memory resultOptionIndexes
     );
 
-    /**
-        @notice Return index of selected bet option by the bettor
-     */
-    function betSelectedOption(
-        uint betId,
-        address bettor
-    ) external view returns(
-        // selectedOptionIndex
-        uint
-    );
-
     // Manager actions
     event CreatedBet(
         uint betId,
@@ -129,6 +118,10 @@ interface ITrustBet {
     function postBetResult(
         uint betId,
         uint optionIndex
+    ) external;
+
+    function withdrawWinnings(
+        uint betId
     ) external;
 
     // collectWinningBet

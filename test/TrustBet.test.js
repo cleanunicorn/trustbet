@@ -131,58 +131,6 @@ contract('TrustBet', ([
         })
     })
 
-    context('bet options', async () => {
-        beforeEach(async () => {
-            await this.TrustBet.createBet(
-                betName,
-                betDescription,
-                betOptions,
-                betValue,
-                trustee,
-                betExpirationDate, {
-                    from: manager,
-                },
-            )
-        })
-
-        it('returns selected bet option', async () => {
-            await this.TrustBet.acceptBet(
-                betId,
-                bettorAOptionIndex, {
-                    from: bettorA,
-                    value: betValue,
-                },
-            )
-
-            const betSelectedOptionCall = await this.TrustBet.betSelectedOption.call(
-                betId,
-                bettorA,
-            )
-
-            expect(betSelectedOptionCall.eq(bettorAOptionIndex), 'match selected option').to.equal(true)
-        })
-
-        it('fails if the bet does not exist', async () => {
-            await expectRevert(
-                this.TrustBet.betSelectedOption.call(
-                    nonExistentBetId,
-                    bettorA,
-                ),
-                'Bet does not exist',
-            )
-        })
-
-        it('fails if the bettor did not accept bet', async () => {
-            await expectRevert(
-                this.TrustBet.betSelectedOption.call(
-                    betId,
-                    bettorA,
-                ),
-                'Bettor did not accept bet',
-            )
-        })
-    })
-
     context('start bet', async () => {
         beforeEach(async () => {
             await this.TrustBet.createBet(
@@ -763,6 +711,42 @@ contract('TrustBet', ([
                     },
                 ),
                 'Account is not a bettor',
+            )
+        })
+
+        it('bet must exist', async () => {
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    nonExistentBetId,
+                    {
+                        from: otherAccount,
+                    },
+                ),
+                'Bet does not exist',
+            )
+        })
+
+        it('bet must be closed', async () => {
+            const createBetTx = await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee,
+                betExpirationDate, {
+                    from: manager,
+                },
+            )
+            const createdBetId = createBetTx.logs[0].args.betId
+
+            await expectRevert(
+                this.TrustBet.withdrawWinnings(
+                    createdBetId,
+                    {
+                        from: otherAccount,
+                    },
+                ),
+                'Bet is not closed',
             )
         })
     })

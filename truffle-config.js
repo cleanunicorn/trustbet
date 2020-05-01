@@ -32,6 +32,7 @@ module.exports = {
             network_id: '5777',
             websockets: true,
         },
+
     },
 
     plugins: ['solidity-coverage'],
@@ -41,6 +42,7 @@ module.exports = {
         reporter: 'eth-gas-reporter',
         reporterOptions: {
             excludeContracts: ['Migrations'],
+            onlyCalledMethods: false,
         },
         timeout: 100000,
         useColors: true,

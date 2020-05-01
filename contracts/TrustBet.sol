@@ -177,32 +177,6 @@ contract TrustBet is ITrustBet {
     }
 
     /**
-        @notice Return index of selected bet option by the bettor
-        @dev Fails if the bet does not exist or if the bettor did not select any option
-        @param betId the id of the bet
-        @param bettor the address of the bettor
-        @return index of selected option by the bettor
-     */
-    function betSelectedOption(
-        uint betId,
-        address bettor
-    )
-        external
-        view
-        override(ITrustBet)
-        returns(
-            // selectedOptionIndex
-            uint
-        )
-    {
-        require(betId <= _bets.length, "Bet does not exist");
-
-        require(_bets[betId].bettors[bettor].exists, "Bettor did not accept bet");
-
-        return (_bets[betId].bettors[bettor].selectedOptionIndex);
-    }
-
-    /**
         @notice Start the bet after all Bettors joined. No additional Bettors can join the bet after it started.
         @dev Only the Manager of the bet can start it
         @param betId The id of the bet that should start
@@ -343,18 +317,20 @@ contract TrustBet is ITrustBet {
         external
         override(ITrustBet)
     {
-        // bet must exist
+        require(betId <= _bets.length, "Bet does not exist");
 
         Bet storage bet = _bets[betId];
 
         // bet must be closed
+        require(bet.status == BetStatus.Closed, "Bet is not closed");
         // bettor must exist in the bet
         // bettor must be winner
 
         Bettor storage bettor = bet.bettors[msg.sender];
 
+        require(bettor.exists, "Account is not a bettor");
         require(bettor.withdrewWinnings == false, "Bettor already withdrew winnings");
-        require(bettor.resultOptionIndex == bet.finalResultOptionIndex, "Bettor is not a winner");
+        require(bettor.selectedOptionIndex == uint(bet.finalResultOptionIndex), "Bettor is not a winner");
 
         bettor.withdrewWinnings = true;
 

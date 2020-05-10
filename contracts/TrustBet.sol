@@ -102,15 +102,13 @@ contract TrustBet is ITrustBet {
         @notice Returns information about a created bet
         @param betId the id  of the bet
      */
-    function betDetails(
+    function bet(
         uint betId
     )
         external
         view
         override(ITrustBet)
         returns (
-            // betId
-            uint,
             // name
             string memory,
             // description
@@ -126,7 +124,43 @@ contract TrustBet is ITrustBet {
             // expirationDate
             uint,
             // status
-            BetStatus,
+            BetStatus
+        )
+    {
+        require(betId <= _bets.length, "Bet does not exist");
+
+        Bet storage bet = _bets[betId];
+
+        return (
+            // name
+            bet.name,
+            // description
+            bet.description,
+            // options
+            bet.options,
+            // value
+            bet.value,
+            // manager
+            bet.manager,
+            // trustee
+            bet.trustee,
+            // expirationDate
+            bet.expirationDate,
+            // status
+            bet.status
+        );
+    }
+
+    /**
+        TODO: Add comment
+     */
+    function bettors(
+        uint betId
+    )
+        external
+        view
+        override(ITrustBet)
+        returns (
             // bettors
             address[] memory,
             // selected option index when bettor entered the bet
@@ -145,33 +179,15 @@ contract TrustBet is ITrustBet {
             selectedOption[i] = bet.bettors[bet.bettorsArray[i]].selectedOptionIndex;
         }
 
-        // TODO: Gather posted result for each bettor
+        // Gather posted result for each bettor
         int[] memory postedResults = new int[](bet.bettorsArray.length);
+        for (uint i = 0; i < bet.bettorsArray.length; i++) {
+            postedResults[i] = bet.bettors[bet.bettorsArray[i]].resultOptionIndex;
+        }
 
         return (
-            // betId
-            betId,
-            // name
-            bet.name,
-            // description
-            bet.description,
-            // options
-            bet.options,
-            // value
-            bet.value,
-            // manager
-            bet.manager,
-            // trustee
-            bet.trustee,
-            // expirationDate
-            bet.expirationDate,
-            // status
-            bet.status,
-            // bettors
             bet.bettorsArray,
-            // bettors' selected option
             selectedOption,
-            // bettors' posted result
             postedResults
         );
     }

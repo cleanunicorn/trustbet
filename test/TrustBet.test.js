@@ -207,15 +207,15 @@ contract('TrustBet', ([
 
             await this.TrustBet.startBet(
                 betId, {
-                    from: manager
-                }
+                    from: manager,
+                },
             )
 
             await this.TrustBet.postBetResult(
                 betId,
                 bettorAOptionIndex, {
-                    from: bettorA
-                }
+                    from: bettorA,
+                },
             )
 
             const bettorsCall = await this.TrustBet.bettors.call(

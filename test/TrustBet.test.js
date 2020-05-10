@@ -1029,4 +1029,147 @@ contract('TrustBet', ([
             })
         })
     })
+
+    context('force bet result', async () => {
+        beforeEach(async () => {
+            await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee,
+                betExpirationDate, {
+                    from: manager,
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                    value: betValue,
+                },
+            )
+
+            await this.TrustBet.startBet(
+                betId, {
+                    from: manager,
+                },
+            )
+        })
+
+        it('cannot force result on non existent bet', async () => {
+            await expectRevert(
+                this.TrustBet.forceBetResult(
+                    nonExistentBetId,
+                    realBetResult, {
+                        from: trustee,
+                    },
+                ),
+                'Bet does not exist',
+            )
+        })
+
+        it('should only be able to force results on started or disputed bets', async () => {
+            const createBetTx = await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee,
+                betExpirationDate, {
+                    from: manager,
+                },
+            )
+            const createdBetId = createBetTx.logs[0].args.betId
+
+            await expectRevert(
+                this.TrustBet.forceBetResult(
+                    createdBetId,
+                    realBetResult, {
+                        from: trustee,
+                    },
+                ),
+                'Can only force result when bet is started or disputed',
+            )
+        })
+
+        it('should be able to force result on a started bet', async () => {
+            await this.TrustBet.forceBetResult(
+                betId,
+                realBetResult, {
+                    from: trustee,
+                },
+            )
+        })
+
+        it('should be able to force result on a disputed bet', async () => {
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                },
+            )
+
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                },
+            )
+
+            const betCall = await this.TrustBet.bet.call(
+                betId,
+            )
+
+            expect(betCall[7].eq(BET_STATUS.DISPUTED), 'Disputed state').to.equal(true)
+
+            await this.TrustBet.forceBetResult(
+                betId,
+                realBetResult, {
+                    from: trustee,
+                },
+            )
+        })
+
+        it('should emit event', async () => {
+            const forceBetResultTx = await this.TrustBet.forceBetResult(
+                betId,
+                realBetResult, {
+                    from: trustee,
+                },
+            )
+
+            expectEvent(
+                forceBetResultTx,
+                'BetClosed', {
+                    betId: betId,
+                    winningOptionIndex: realBetResult,
+                },
+            )
+        })
+
+        it('should move bet into closed state', async () => {
+            await this.TrustBet.forceBetResult(
+                betId,
+                realBetResult, {
+                    from: trustee,
+                },
+            )
+
+            const betDetailsCall = await this.TrustBet.bet.call(
+                betId,
+            )
+
+            expect(betDetailsCall[7].eq(BET_STATUS.CLOSED), 'bet closed').to.equal(true)
+        })
+    })
 })

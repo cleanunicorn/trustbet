@@ -377,4 +377,31 @@ contract TrustBet is ITrustBet {
 
         msg.sender.transfer(bet.value * bet.bettorsArray.length / winnerCount);
     }
+
+    /**
+        @notice TODO: Write comments
+     */
+    function forceBetResult(
+        uint betId,
+        uint optionIndex
+    )
+        external
+        override(ITrustBet)
+    {
+        require(betId <= _bets.length, "Bet does not exist");
+
+        Bet storage bet = _bets[betId];
+
+        require(
+            (bet.status == BetStatus.Started) || (bet.status == BetStatus.Disputed),
+            "Can only force result when bet is started or disputed"
+        );
+
+        bet.status = BetStatus.Closed;
+        // bet.finalResultOptionIndex = int(optionIndex);
+        emit BetClosed(
+            betId,
+            optionIndex
+        );
+    }
 }

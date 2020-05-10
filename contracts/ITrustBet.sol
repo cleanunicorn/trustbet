@@ -134,17 +134,9 @@ interface ITrustBet {
         uint betId
     ) external;
 
-    // collectWinningBet
-
-    // // Trustee actions
-    // function resolveBet(
-    //     uint betId,
-    //     string calldata option
-    // )
-    // external;
-
-    // function cancelBet(
-    //     uint betId
-    // )
-    // external;
+    // Trustee actions
+    function forceBetResult(
+        uint betId,
+        uint optionIndex
+    ) external;
 }

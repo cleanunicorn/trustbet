@@ -1014,7 +1014,7 @@ contract('TrustBet', ([
                 betId,
                 realBetResult, {
                     from: trustee,
-                }
+                },
             )
         })
 
@@ -1043,7 +1043,7 @@ contract('TrustBet', ([
                 betId,
                 realBetResult, {
                     from: trustee,
-                }
+                },
             )
         })
 
@@ -1052,7 +1052,7 @@ contract('TrustBet', ([
                 betId,
                 realBetResult, {
                     from: trustee,
-                }
+                },
             )
 
             expectEvent(
@@ -1069,7 +1069,7 @@ contract('TrustBet', ([
                 betId,
                 realBetResult, {
                     from: trustee,
-                }
+                },
             )
 
             const betDetailsCall = await this.TrustBet.bet.call(

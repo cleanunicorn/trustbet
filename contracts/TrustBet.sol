@@ -192,6 +192,26 @@ contract TrustBet is ITrustBet {
         );
     }
 
+    function result(
+        uint betId
+    )
+        external
+        view
+        override(ITrustBet)
+        returns (
+            // result option index
+            uint
+        )
+    {
+        require(betId <= _bets.length, "Bet does not exist");
+
+        Bet storage bet = _bets[betId];
+
+        require(bet.status == BetStatus.Closed, "Can only return result when bet is closed");
+
+        return uint(bet.finalResultOptionIndex);
+    }
+
     /**
         @notice Start the bet after all Bettors joined. No additional Bettors can join the bet after it started.
         @dev Only the Manager of the bet can start it

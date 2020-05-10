@@ -162,11 +162,11 @@ contract TrustBet is ITrustBet {
         override(ITrustBet)
         returns (
             // bettors
-            address[] memory bettors,
+            address[] memory,
             // selected option index when bettor entered the bet
-            uint[] memory selectedOptionIndexes,
+            uint[] memory,
             // reported option index by bettor as the result at the end of the bet
-            int[] memory resultOptionIndexes
+            int[] memory
         )
     {
         require(betId <= _bets.length, "Bet does not exist");

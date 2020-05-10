@@ -782,7 +782,7 @@ contract('TrustBet', ([
             await this.TrustBet.forceBetResult(
                 betId,
                 realBetResult, {
-                    from: trustee
+                    from: trustee,
                 },
             )
 

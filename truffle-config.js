@@ -42,7 +42,6 @@ module.exports = {
         reporter: 'eth-gas-reporter',
         reporterOptions: {
             excludeContracts: ['Migrations'],
-            onlyCalledMethods: false,
         },
         timeout: 100000,
         useColors: true,

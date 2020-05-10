@@ -398,7 +398,7 @@ contract TrustBet is ITrustBet {
         );
 
         bet.status = BetStatus.Closed;
-        // bet.finalResultOptionIndex = int(optionIndex);
+        bet.finalResultOptionIndex = int(optionIndex);
         emit BetClosed(
             betId,
             optionIndex

@@ -761,25 +761,36 @@ contract('TrustBet', ([
             const betResultCall = await this.TrustBet.result.call(
                 betId,
             )
-
             expect(betResultCall.eq(realBetResult), 'matches real result').to.equal(true)
         })
 
-        // it('should return real result when trustee forces result', async () => {
-        //     await this.TrustBet.postBetResult(
-        //         betId,
-        //         bettorAOptionIndex, {
-        //             from: bettorA,
-        //         },
-        //     )
+        it('should return real result when trustee forces result', async () => {
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                },
+            )
 
-        //     await this.TrustBet.postBetResult(
-        //         betId,
-        //         bettorAOptionIndex, {
-        //             from: bettorB,
-        //         },
-        //     )
-        // })
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                },
+            )
+
+            await this.TrustBet.forceBetResult(
+                betId,
+                realBetResult, {
+                    from: trustee
+                },
+            )
+
+            const betResultCall = await this.TrustBet.result.call(
+                betId,
+            )
+            expect(betResultCall.eq(realBetResult), 'matches real result').to.equal(true)
+        })
     })
 
     context('withdraw winnings', async () => {

@@ -102,15 +102,13 @@ contract TrustBet is ITrustBet {
         @notice Returns information about a created bet
         @param betId the id  of the bet
      */
-    function betDetails(
+    function bet(
         uint betId
     )
         external
         view
         override(ITrustBet)
         returns (
-            // betId
-            uint,
             // name
             string memory,
             // description
@@ -126,31 +124,14 @@ contract TrustBet is ITrustBet {
             // expirationDate
             uint,
             // status
-            BetStatus,
-            // bettors
-            address[] memory,
-            // selected option index when bettor entered the bet
-            uint[] memory,
-            // reported option index by bettor as the result at the end of the bet
-            int[] memory
+            BetStatus
         )
     {
         require(betId <= _bets.length, "Bet does not exist");
 
         Bet storage bet = _bets[betId];
 
-        // Gather selected option for each bettor
-        uint[] memory selectedOption = new uint[](bet.bettorsArray.length);
-        for (uint i = 0; i < bet.bettorsArray.length; i++) {
-            selectedOption[i] = bet.bettors[bet.bettorsArray[i]].selectedOptionIndex;
-        }
-
-        // TODO: Gather posted result for each bettor
-        int[] memory postedResults = new int[](bet.bettorsArray.length);
-
         return (
-            // betId
-            betId,
             // name
             bet.name,
             // description
@@ -166,12 +147,47 @@ contract TrustBet is ITrustBet {
             // expirationDate
             bet.expirationDate,
             // status
-            bet.status,
+            bet.status
+        );
+    }
+
+    /**
+        TODO: Add comment
+     */
+    function bettors(
+        uint betId
+    )
+        external
+        view
+        override(ITrustBet)
+        returns (
             // bettors
+            address[] memory bettors,
+            // selected option index when bettor entered the bet
+            uint[] memory selectedOptionIndexes,
+            // reported option index by bettor as the result at the end of the bet
+            int[] memory resultOptionIndexes
+        )
+    {
+        require(betId <= _bets.length, "Bet does not exist");
+
+        Bet storage bet = _bets[betId];
+
+        // Gather selected option for each bettor
+        uint[] memory selectedOption = new uint[](bet.bettorsArray.length);
+        for (uint i = 0; i < bet.bettorsArray.length; i++) {
+            selectedOption[i] = bet.bettors[bet.bettorsArray[i]].selectedOptionIndex;
+        }
+
+        // Gather posted result for each bettor
+        int[] memory postedResults = new int[](bet.bettorsArray.length);
+        for (uint i = 0; i < bet.bettorsArray.length; i++) {
+            postedResults[i] = bet.bettors[bet.bettorsArray[i]].resultOptionIndex;
+        }
+
+        return (
             bet.bettorsArray,
-            // bettors' selected option
             selectedOption,
-            // bettors' posted result
             postedResults
         );
     }

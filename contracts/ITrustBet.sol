@@ -35,11 +35,9 @@ interface ITrustBet {
     /**
         @notice Returns bet details
      */
-    function betDetails(
+    function bet(
         uint betId
     ) external view returns (
-        // betId
-        uint,
         // name
         string memory,
         // description
@@ -55,7 +53,15 @@ interface ITrustBet {
         // expirationDate
         uint,
         // status
-        BetStatus,
+        BetStatus
+    );
+
+    /**
+        TODO: Add comment
+     */
+    function bettors(
+        uint betId
+    ) external view returns (
         // bettors
         address[] memory bettors,
         // selected option index when bettor entered the bet

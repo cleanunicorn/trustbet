@@ -67,6 +67,13 @@ interface ITrustBet {
         int[] memory
     );
 
+    function result(
+        uint betId
+    ) external view returns (
+        // result option index
+        uint
+    );
+
     // Manager actions
     event CreatedBet(
         uint betId,

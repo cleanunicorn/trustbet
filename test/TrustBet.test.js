@@ -689,6 +689,110 @@ contract('TrustBet', ([
         })
     })
 
+    context('bet result', async () => {
+        beforeEach(async () => {
+            await this.TrustBet.createBet(
+                betName,
+                betDescription,
+                betOptions,
+                betValue,
+                trustee,
+                betExpirationDate, {
+                    from: manager,
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                    value: betValue,
+                },
+            )
+
+            await this.TrustBet.acceptBet(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                    value: betValue,
+                },
+            )
+
+            await this.TrustBet.startBet(
+                betId, {
+                    from: manager,
+                },
+            )
+        })
+
+        it('fails if the bet does not exist', async () => {
+            await expectRevert(
+                this.TrustBet.result(
+                    nonExistentBetId,
+                ),
+                'Bet does not exist',
+            )
+        })
+
+        it('fails if the bet is not in closed state', async () => {
+            await expectRevert(
+                this.TrustBet.result(
+                    betId,
+                ),
+                'Can only return result when bet is closed',
+            )
+        })
+
+        it('should return real result when bettors agree', async () => {
+            await this.TrustBet.postBetResult(
+                betId,
+                realBetResult, {
+                    from: bettorA,
+                },
+            )
+
+            await this.TrustBet.postBetResult(
+                betId,
+                realBetResult, {
+                    from: bettorB,
+                },
+            )
+
+            const betResultCall = await this.TrustBet.result.call(
+                betId,
+            )
+            expect(betResultCall.eq(realBetResult), 'matches real result').to.equal(true)
+        })
+
+        it('should return real result when trustee forces result', async () => {
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorAOptionIndex, {
+                    from: bettorA,
+                },
+            )
+
+            await this.TrustBet.postBetResult(
+                betId,
+                bettorBOptionIndex, {
+                    from: bettorB,
+                },
+            )
+
+            await this.TrustBet.forceBetResult(
+                betId,
+                realBetResult, {
+                    from: trustee,
+                },
+            )
+
+            const betResultCall = await this.TrustBet.result.call(
+                betId,
+            )
+            expect(betResultCall.eq(realBetResult), 'matches real result').to.equal(true)
+        })
+    })
+
     context('withdraw winnings', async () => {
         beforeEach(async () => {
             await this.TrustBet.createBet(

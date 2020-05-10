@@ -32,9 +32,6 @@ interface ITrustBet {
         Cancelled
     }
 
-    /**
-        @notice Returns bet details
-     */
     function bet(
         uint betId
     ) external view returns (
@@ -63,11 +60,11 @@ interface ITrustBet {
         uint betId
     ) external view returns (
         // bettors
-        address[] memory bettors,
+        address[] memory,
         // selected option index when bettor entered the bet
-        uint[] memory selectedOptionIndexes,
+        uint[] memory,
         // reported option index by bettor as the result at the end of the bet
-        int[] memory resultOptionIndexes
+        int[] memory
     );
 
     // Manager actions

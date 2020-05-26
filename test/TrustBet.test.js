@@ -164,6 +164,18 @@ contract('TrustBet', ([
             expect(arrayEqual(bettorsCall[2], []), 'no result options').to.equal(true)
         })
 
+        it('trustee cannot join bet', async () => {
+            await expectRevert(
+                this.TrustBet.acceptBet(
+                    betId,
+                    bettorAOptionIndex, {
+                        from: trustee,
+                        value: betValue,
+                    },
+                ), 'Trustee cannot join bet',
+            )
+        })
+
         it('bettor is returned in bet details after accepting bet', async () => {
             await this.TrustBet.acceptBet(
                 betId,

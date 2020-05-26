@@ -255,6 +255,7 @@ contract TrustBet is ITrustBet {
         require(selectedOptionIndex <= bet.options.length, "Option does not exist");
         require(msg.value == bet.value, "Sent value does not match bet value");
         require(bet.bettors[msg.sender].exists == false, "Cannot accept the same bet twice");
+        require(bet.trustee != msg.sender, "Trustee cannot join bet");
 
         // Create bettor structure
         Bettor storage bettor = bet.bettors[msg.sender];

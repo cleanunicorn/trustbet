@@ -108,7 +108,8 @@ In the contracts section you will see deployed contracts. You are interested in 
 
 Clicking on `TrustBet` shows more details, even storage information about the contract.
 
-![TrustBet storage](./static/images/ganache-contract-details.png)
+![TrustBet storage](./static/images/storage.png)
+![TrustBet txs](./static/images/txs.png)
 
 In the screenshot above you can see a new bet was created and its properties. One can explore bettors, options, or its status.
 
